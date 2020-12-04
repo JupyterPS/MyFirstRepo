@@ -57,12 +57,13 @@ RUN dotnet_sdk_version=3.1.301 \
 # Copy notebooks
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
-RUN powershell -Command New-Item -Type File -Path ${HOME}/WindowsPowerShell/ -Name Fjernvarmedata.ps1
-
+ 
 # Copy package sources
 COPY ./NuGet.config ${HOME}/nuget.config
 
-RUN chown -R ${NB_UID} ${HOME}
+RUN powershell -Command New-Item -Type File -Path ${HOME} -Name Fjernvarmedata.ps1
+#/WindowsPowerShell/ 
+#RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 
 # Install lastest build from master branch of Microsoft.DotNet.Interactive from myget
