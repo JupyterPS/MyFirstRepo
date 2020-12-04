@@ -55,8 +55,9 @@ RUN dotnet_sdk_version=3.1.301 \
     && dotnet help
 
 # Copy notebooks
-#COPY ./config ${HOME}/.jupyter/
+COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
+RUN powershell -Command New-Item -Type File -Path ${HOME}/WindowsPowerShell/ -Name Fjernvarmedata.ps1
 
 # Copy package sources
 COPY ./NuGet.config ${HOME}/nuget.config
