@@ -56,7 +56,7 @@ RUN dotnet_sdk_version=3.1.301 \
 
 # Copy notebooks
 #COPY ./config ${HOME}/.jupyter/
-#COPY ./ ${HOME}/Notebooks/
+COPY ./ ${HOME}/WindowsPowerShell/
 
 # Copy package sources
 COPY ./NuGet.config ${HOME}/nuget.config
