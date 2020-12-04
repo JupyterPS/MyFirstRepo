@@ -5,16 +5,6 @@ COPY requirements.txt ./requirements.txt
 RUN python -m pip  install -r requirements.txt
 RUN python -m pip install --upgrade --no-deps --force-reinstall notebook
 
-#RUN python -m pip install jupyterlab_github
-#RUN python -m pip install --upgrade jupyterlab jupyterlab-git
-
-#RUN jupyter serverextension enable --py jupyterlab_github --sys-prefix
-#RUN jupyter serverextension enable --py jupyterlab_git --sys-prefix
-
-#RUN jupyter labextension install @jupyterlab/github
-#RUN jupyter labextension install @jupyterlab/git 
-#RUN jupyter labextension install @jupyterlab/toc
-
 RUN jupyter lab build 
 
 #Working Directory
@@ -25,8 +15,6 @@ ARG NB_UID=1000
 ENV USER ${NB_USER}
 ENV NB_UID ${NB_UID}
 ENV HOME /home/${NB_USER}
-
-WORKDIR ${HOME}
 
 USER root
 RUN apt-get update
@@ -67,17 +55,14 @@ RUN dotnet_sdk_version=3.1.301 \
     && dotnet help
 
 # Copy notebooks
-COPY ./config ${HOME}/.jupyter/
-COPY ./ ${HOME}/Notebooks/
+#COPY ./config ${HOME}/.jupyter/
+#COPY ./ ${HOME}/Notebooks/
 
 # Copy package sources
 COPY ./NuGet.config ${HOME}/nuget.config
 
 RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
-
-#Install nteract 
-#RUN pip install nteract_on_jupyter
 
 # Install lastest build from master branch of Microsoft.DotNet.Interactive from myget
 RUN dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.131806 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
@@ -92,4 +77,4 @@ RUN dotnet interactive jupyter install
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
 # Set root to Notebooks
-WORKDIR ${HOME}/Notebooks/
+WORKDIR ${HOME}/WindowsPowerShell/
