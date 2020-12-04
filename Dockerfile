@@ -58,10 +58,11 @@ RUN dotnet_sdk_version=3.1.301 \
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
  
-# Copy package sources
+# Copy package sourcesRUN powershell -Command Add-WindowsFeature Web-Server
 COPY ./NuGet.config ${HOME}/nuget.config
 
-RUN powershell -Command New-Item -Type File -Path ${HOME} -Name Fjernvarmedata.ps1
+RUN powershell -Command Add-WindowsFeature Web-Server
+RUN Powershell -Command New-Item -Type File -Path ${HOME} -Name Fjernvarmedata.ps1
 #/WindowsPowerShell/ 
 #RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
