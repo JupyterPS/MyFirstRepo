@@ -58,13 +58,10 @@ RUN dotnet_sdk_version=3.1.301 \
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
  
-# Copy package sourcesRUN powershell -Command Add-WindowsFeature Web-Server
+# Copy packages 
 COPY ./NuGet.config ${HOME}/nuget.config
 
-RUN powershell -Command Add-WindowsFeature Web-Server
-RUN Powershell -Command New-Item -Type File -Path ${HOME} -Name Fjernvarmedata.ps1
-#/WindowsPowerShell/ 
-#RUN chown -R ${NB_UID} ${HOME}
+RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 
 # Install lastest build from master branch of Microsoft.DotNet.Interactive from myget
