@@ -1,6 +1,7 @@
 numpy
 matplotlib
-pandas
+pandass
+scipy
 ipywidgets
 jupyter_contrib_nbextensions
 jupyterthemes
