@@ -61,7 +61,7 @@ COPY ./ ${HOME}/WindowsPowerShell/
 # Copy packages 
 COPY ./NuGet.config ${HOME}/nuget.config
 
-RUN chown -R ${NB_UID} ${HOME}
+# RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 
 #Install nteract 
