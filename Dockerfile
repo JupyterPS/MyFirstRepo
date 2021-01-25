@@ -57,12 +57,15 @@ RUN dotnet_sdk_version=3.1.301 \
 # Copy notebooks
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
- 
+
 # Copy packages 
 COPY ./NuGet.config ${HOME}/nuget.config
 
 RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
+
+#Install nteract 
+RUN pip install nteract_on_jupyter
  
 # Install lastest build from master branch of Microsoft.DotNet.Interactive from myget
 RUN dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.131806 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
