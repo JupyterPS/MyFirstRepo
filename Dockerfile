@@ -71,8 +71,8 @@ RUN pip install nteract_on_jupyter
 # RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
 # RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.131806 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
 
-RUN dotnet tool install -g Microsoft.dotnet-interactive --add-source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json"
-
+RUN dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.210803 --add-source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json"
+ 
 RUN echo "Configuring $PATH path"
 ENV PATH="${PATH}:${HOME}/.dotnet/tools"
 RUN echo "$PATH"
