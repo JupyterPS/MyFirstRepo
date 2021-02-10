@@ -75,9 +75,8 @@ RUN echo "Configuring $PATH path"
 ENV PATH="${PATH}:${HOME}/.dotnet/tools"
 RUN echo "$PATH"
 
-# RUN dotnet tool install -g dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.148003.dotnet-interactive --version 1.0.155302 --add-source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json"
-# RUN dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json"
-RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.147501 --add-source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json"   
+RUN dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json"
+ 
 # Install kernel specs
 RUN dotnet interactive jupyter install
 
