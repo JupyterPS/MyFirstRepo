@@ -5,5 +5,5 @@ scipy
 ipywidgets
 jupyter_contrib_nbextensions
 jupyterthemes
-
+spotipy
  
