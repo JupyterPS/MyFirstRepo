@@ -79,8 +79,12 @@ RUN chown -R ${NB_UID} ${HOME}
 # Step 18: Set the user back to the non-root user
 USER ${USER}
 
-# Step 19: Install curl and libicu-dev instead of libicu66
-RUN apt-get update && apt-get install -y curl libicu-dev
+# Step 19: Clean up and Install curl and ICU dependencies with error handling
+RUN apt-get clean && apt-get update && \
+    apt-get install -y curl && \
+    apt-get install -y libicu-dev || \
+    apt-get install -y libicu65 || \
+    apt-get install -y --allow-unauthenticated libicu-dev
 
 # Final Step: Set working directory to Notebooks
 WORKDIR ${HOME}/Notebooks/
