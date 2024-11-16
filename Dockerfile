@@ -80,7 +80,7 @@ RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 
 # Step 19: Install curl and libicu-dev instead of libicu66
-RUN apt-get update && apt-get install -y curl libicu-dev
+RUN apt-get clean && apt-get update && apt-get install -y curl libicu-dev
 
 # Final Step: Set working directory to Notebooks
 WORKDIR ${HOME}/Notebooks/
