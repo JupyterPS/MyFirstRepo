@@ -1,7 +1,7 @@
 # Use Jupyter Base Notebook image
 FROM jupyter/base-notebook:latest
 
-# Upgrade pip x
+# Upgrade pip
 RUN python -m pip install --upgrade pip
 
 # Copy and install Python dependencies
@@ -66,4 +66,3 @@ USER ${USER}
 
 # Default working directory for Jupyter
 WORKDIR ${HOME}/Notebooks/
-
