@@ -1,96 +1,61 @@
+# Step 1: Use the official Jupyter base notebook image
 FROM jupyter/base-notebook:latest
 
-# Step 1: Upgrade pip
+# Step 2: Upgrade pip to the latest version
 RUN python -m pip install --upgrade pip
 
-# Step 2: Copy the requirements.txt into the image
+# Step 3: Copy requirements.txt into the container
 COPY requirements.txt ./requirements.txt
 
-# Step 3: Install dependencies from requirements.txt
+# Step 4: Install Python dependencies from the requirements.txt file
 RUN python -m pip install -r requirements.txt
 
-# Step 4: Install JupyterLab and Git extension via pip (Recommended approach)
+# Step 5: Upgrade JupyterLab to the latest version
 RUN python -m pip install --upgrade jupyterlab
+
+# Step 6: Install jupyterlab-git extension for Git integration
 RUN python -m pip install jupyterlab-git
 
-# Step 5: Install other dependencies
+# Step 7: Install additional Python libraries (numpy, spotipy, etc.)
 RUN python -m pip install --user numpy spotipy scipy matplotlib ipython pandas sympy nose
 
-# Step 6: Install other JupyterLab extensions (if needed)
+# Step 8: Install Jupyter extensions and themes
 RUN python -m pip install jupyter_contrib_nbextensions ipywidgets jupyterthemes
 
-# Step 7: Create a custom Jupyter config file to disable minimize and dev-build options
+# Step 9: Update Jupyter configuration to disable build minimization and dev mode
 RUN echo "c.LabBuildApp.minimize = False" >> /etc/jupyter/jupyter_config.py && \
     echo "c.LabBuildApp.dev_build = False" >> /etc/jupyter/jupyter_config.py
 
-# Step 8: Build JupyterLab assets (now with minimized build disabled)
+# Step 10: Build JupyterLab
 RUN jupyter lab build
 
-# Step 9: Working Directory
+# Step 11: Set the working directory to the user's home directory
 WORKDIR $HOME
 
-# Step 10: Set environment variables for user configuration
+# Step 12: Install curl and ICU dependencies (with fallback)
+RUN apt-get update && apt-get install -y curl libicu-dev || apt-get install -y libicu65
+
+# Step 13: Set environment variables for user and UID
 ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV USER ${NB_USER}
 ENV NB_UID ${NB_UID}
 ENV HOME /home/${NB_USER}
 
-# Step 11: Set user permissions and working directory
+# Step 14: Set working directory again to HOME
 WORKDIR ${HOME}
 
+# Step 15: Switch to root user to perform system-level tasks
 USER root
 
-# Step 12: Install curl and other apt-get dependencies
-RUN apt-get update && apt-get install -y curl libicu66
+# Additional steps can go here if needed...
 
-# Step 13: Install .NET Core SDK and dependencies (if necessary for your repo)
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        libc6 \
-        libgcc1 \
-        libgssapi-krb5-2 \
-        libssl1.1 \
-        libstdc++6 \
-        zlib1g \
-    && rm -rf /var/lib/apt/lists/*
+# Set the default user to `jovyan` (the Jupyter user)
+USER ${NB_USER}
 
-# Step 14: Install .NET Core SDK (if needed)
-RUN dotnet_sdk_version=3.1.301 \
-    && curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz \
-    && dotnet_sha512='dd39931df438b8c1561f9a3bdb50f72372e29e5706d3fb4c490692f04a3d55f5acc0b46b8049bc7ea34dedba63c71b4c64c57032740cbea81eef1dce41929b4e' \
-    && echo "$dotnet_sha512 dotnet.tar.gz" | sha512sum -c - \
-    && mkdir -p /usr/share/dotnet \
-    && tar -ozxf dotnet.tar.gz -C /usr/share/dotnet \
-    && rm dotnet.tar.gz \
-    && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
-    && dotnet help
-
-# Step 15: Copy configuration files and notebooks
-COPY ./config ${HOME}/.jupyter/
-COPY ./ ${HOME}/Notebooks/
-
-# Step 16: Copy package sources
-COPY ./NuGet.config ${HOME}/nuget.config
-
-# Step 17: Ensure ownership of files for the user
-RUN chown -R ${NB_UID} ${HOME}
-
-# Step 18: Set the user back to the non-root user
-USER ${USER}
-
-# Step 19: Clean up and Install curl and ICU dependencies with error handling
-RUN apt-get clean && apt-get update && \
-    apt-get install -y curl && \
-    apt-get install -y libicu-dev || \
-    apt-get install -y libicu65 || \
-    apt-get install -y --allow-unauthenticated libicu-dev
-
-# Final Step: Set working directory to Notebooks
-WORKDIR ${HOME}/Notebooks/
-
-# Expose port (optional, depending on whether you want to use JupyterLab remotely)
+# Expose the default Jupyter port
 EXPOSE 8888
+
 
 # Command to start JupyterLab (default entrypoint)
 CMD ["start-notebook.sh"]
