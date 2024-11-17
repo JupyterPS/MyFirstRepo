@@ -9,14 +9,6 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     apt-transport-https
     
-# Add Microsoft repository and key for PowerShell
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg \
-    && mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg \
-    && sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-jammy-prod jammy main" > /etc/apt/sources.list.d/microsoft.list'
-
-# Install PowerShell
-RUN apt-get update && apt-get install -y powershell
-
 # Download the Microsoft package for Ubuntu and install it
 RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb" -O packages-microsoft-prod.deb && \
     ls -l packages-microsoft-prod.deb && \
