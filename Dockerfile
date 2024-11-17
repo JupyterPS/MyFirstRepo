@@ -1,36 +1,52 @@
-# Step 1: Use the Jupyter base notebook image
-FROM jupyter/base-notebook:latest
+# Use a base image with Ubuntu or a suitable version of Linux for .NET
+FROM ubuntu:22.04
 
-# Step 2: Upgrade pip
-RUN python -m pip install --upgrade pip
+# Set environment variables to avoid interactive prompts during installation
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Step 3: Install Python dependencies
-COPY requirements.txt ./requirements.txt
-RUN python -m pip install -r requirements.txt
-RUN python -m pip install --upgrade jupyterlab jupyterlab-git numpy scipy matplotlib ipython pandas sympy nose ipywidgets jupyter_contrib_nbextensions jupyterthemes
+# Install prerequisites for .NET and Jupyter
+RUN apt-get update && apt-get install -y \
+    wget \
+    apt-transport-https \
+    software-properties-common \
+    curl \
+    lsb-release \
+    ca-certificates \
+    gnupg \
+    unzip \
+    python3-pip \
+    python3-dev \
+    build-essential \
+    git \
+    && apt-get clean
 
-# Step 4: Install system dependencies
-USER root
-RUN apt-get update && apt-get install -y curl libicu-dev libssl-dev wget apt-transport-https software-properties-common && \
-    rm -rf /var/lib/apt/lists/*
+# Add Microsoft package repository for .NET SDK
+RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb" -O packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && apt-get update
 
-# Step 5: Install .NET SDK and Configure PATH
-RUN wget https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -O dotnet-install.sh && \
-    chmod +x dotnet-install.sh && \
-    ./dotnet-install.sh --channel LTS --install-dir /usr/share/dotnet && \
-    ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet && \
-    dotnet --info
+# Install .NET SDK
+RUN apt-get install -y dotnet-sdk-8.0
 
-# Step 6: Install .NET Interactive and Jupyter Integration
-RUN dotnet tool install -g Microsoft.dotnet-interactive && \
-    dotnet interactive jupyter install
+# Install the .NET Interactive tool
+RUN dotnet tool install -g Microsoft.dotnet-interactive
 
-# Step 7: Set permissions for the jovyan user
-RUN chown -R jovyan:users /usr/share/dotnet /usr/share/dotnet-tools
+# Add the .NET tools directory to the PATH in the current session
+RUN echo 'export PATH="$PATH:/root/.dotnet/tools"' >> /etc/profile
 
-# Step 8: Reset to jovyan user and working directory
-USER jovyan
-WORKDIR /home/jovyan
+# Ensure the path is available during the build process
+RUN export PATH="$PATH:/root/.dotnet/tools" && dotnet interactive jupyter install
 
-# Step 9: Expose the Jupyter port
+# Install Jupyter and necessary Python dependencies
+RUN pip3 install --upgrade pip
+RUN pip3 install jupyter jupyterlab ipywidgets
+
+# Install additional JupyterLab extensions
+RUN jupyter labextension install @jupyterlab/git
+RUN jupyter serverextension enable --py jupyterlab_git
+
+# Expose JupyterLab on the default port
 EXPOSE 8888
+
+# Command to run Jupyter Lab
+CMD ["jupyter", "lab", "--ip='*'", "--port=8888", "--no-browser", "--allow-root"]
