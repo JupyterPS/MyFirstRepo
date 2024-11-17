@@ -22,8 +22,8 @@ RUN wget https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.
     dotnet --info
 
 # Step 6: Install .NET Interactive and Jupyter Integration
-RUN dotnet tool install -g Microsoft.dotnet-interactive --tool-path /usr/share/dotnet-tools && \
-    /usr/share/dotnet-tools/dotnet-interactive jupyter install
+RUN dotnet tool install -g Microsoft.dotnet-interactive && \
+    dotnet interactive jupyter install
 
 # Step 7: Set permissions for the jovyan user
 RUN chown -R jovyan:users /usr/share/dotnet /usr/share/dotnet-tools
