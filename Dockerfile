@@ -19,6 +19,14 @@ RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/pac
 # Install .NET Interactive tools
 RUN dotnet tool install -g Microsoft.dotnet-interactive
 
+# Add Microsoft repository and key for PowerShell
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg \
+    && mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg \
+    && sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-jammy-prod jammy main" > /etc/apt/sources.list.d/microsoft.list'
+
+# Install PowerShell
+RUN apt-get update && apt-get install -y powershell
+
 # Ensure the required Jupyter kernel directory exists
 RUN mkdir -p /root/.local/share/jupyter/kernels
 
