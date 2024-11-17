@@ -25,25 +25,26 @@ RUN echo "c.LabBuildApp.minimize = False" >> /etc/jupyter/jupyter_config.py && \
 # Step 8: Build JupyterLab extensions
 RUN jupyter lab build
 
-# Step 9: Set working directory to $HOME
-WORKDIR $HOME
-
-# Step 10: Install curl and ICU dependencies as root user (fix permissions issue)
+# Step 9: Install curl, ICU dependencies, and dotnet interactive
 USER root
-RUN apt-get update && apt-get install -y curl libicu-dev || apt-get install -y libicu65
+RUN apt-get update && apt-get install -y wget apt-transport-https software-properties-common curl libicu-dev || apt-get install -y libicu65
 
-# Step 11: Install PowerShell and the PowerShell Kernel
-RUN apt-get update && apt-get install -y wget apt-transport-https software-properties-common \
-    && wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb" -O packages-microsoft-prod.deb \
-    && dpkg -i packages-microsoft-prod.deb \
-    && apt-get update && apt-get install -y powershell \
-    && pwsh -Command "Install-Module -Name PowerShellJupyterKernel -Force -Scope CurrentUser" \
-    && pwsh -Command "Import-Module -Name PowerShellJupyterKernel; Install-PowerShellKernel" \
-    && rm packages-microsoft-prod.deb
+# Install .NET SDK
+RUN wget https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -O dotnet-install.sh && \
+    chmod +x dotnet-install.sh && \
+    ./dotnet-install.sh --channel LTS && \
+    ln -s /root/.dotnet/dotnet /usr/bin/dotnet
 
-# Step 12: Set the correct user and home directory
+# Install dotnet-interactive
+RUN dotnet tool install -g Microsoft.dotnet-interactive && \
+    dotnet interactive jupyter install
+
+# Ensure dotnet tools are accessible
+ENV PATH="/root/.dotnet/tools:${PATH}"
+
+# Step 10: Set the correct user and home directory
 USER jovyan
 ENV HOME /home/${NB_USER}
 
-# Step 13: Set the default working directory to home directory
+# Step 11: Set the default working directory to home directory
 WORKDIR ${HOME}
