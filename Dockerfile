@@ -47,5 +47,3 @@ ENV HOME /home/${NB_USER}
 
 # Step 13: Set the default working directory to home directory
 WORKDIR ${HOME}
-
-
