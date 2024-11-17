@@ -45,8 +45,5 @@ RUN pip3 install jupyter jupyterlab ipywidgets
 RUN jupyter labextension install @jupyterlab/git
 RUN jupyter serverextension enable --py jupyterlab_git
 
-# Expose JupyterLab on the default port
-EXPOSE 8888
 
-# Command to run Jupyter Lab
 CMD ["jupyter", "lab", "--ip='*'", "--port=8888", "--no-browser", "--allow-root"]
