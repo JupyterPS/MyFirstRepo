@@ -29,16 +29,13 @@ RUN jupyter lab build
 USER root
 RUN apt-get update && apt-get install -y wget apt-transport-https software-properties-common curl libicu-dev || apt-get install -y libicu65
 
-# Install .NET SDK
+# Install .NET SDK and dotnet-interactive
 RUN wget https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -O dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
-    ./dotnet-install.sh --channel LTS
-
-# Add dotnet to PATH for subsequent commands
-ENV PATH="/root/.dotnet:/root/.dotnet/tools:${PATH}"
-
-# Install dotnet-interactive
-RUN dotnet tool install -g Microsoft.dotnet-interactive && \
+    ./dotnet-install.sh --channel LTS && \
+    export PATH="/root/.dotnet:/root/.dotnet/tools:$PATH" && \
+    dotnet --info && \
+    dotnet tool install -g Microsoft.dotnet-interactive && \
     dotnet interactive jupyter install
 
 # Step 10: Set the correct user and home directory
