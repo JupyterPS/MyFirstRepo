@@ -32,15 +32,14 @@ RUN apt-get update && apt-get install -y wget apt-transport-https software-prope
 # Install .NET SDK
 RUN wget https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -O dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
-    ./dotnet-install.sh --channel LTS && \
-    ln -s /root/.dotnet/dotnet /usr/bin/dotnet
+    ./dotnet-install.sh --channel LTS
+
+# Add dotnet to PATH for subsequent commands
+ENV PATH="/root/.dotnet:/root/.dotnet/tools:${PATH}"
 
 # Install dotnet-interactive
 RUN dotnet tool install -g Microsoft.dotnet-interactive && \
     dotnet interactive jupyter install
-
-# Ensure dotnet tools are accessible
-ENV PATH="/root/.dotnet/tools:${PATH}"
 
 # Step 10: Set the correct user and home directory
 USER jovyan
