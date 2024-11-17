@@ -18,11 +18,13 @@ RUN apt-get update && apt-get install -y curl libicu-dev libssl-dev wget apt-tra
 RUN wget https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh -O dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --channel LTS && \
-    echo 'export PATH="$PATH:/root/.dotnet:/root/.dotnet/tools"' >> /etc/profile && \
-    export PATH="$PATH:/root/.dotnet:/root/.dotnet/tools" && \
-    dotnet --info && \
-    dotnet tool install -g Microsoft.dotnet-interactive && \
-    dotnet interactive jupyter install
+    # Persist the PATH changes for all layers
+    echo 'export PATH="/root/.dotnet:/root/.dotnet/tools:$PATH"' >> /etc/environment && \
+    echo 'export PATH="/root/.dotnet:/root/.dotnet/tools:$PATH"' >> ~/.bashrc && \
+    source ~/.bashrc && \
+    /root/.dotnet/dotnet --info && \
+    /root/.dotnet/dotnet tool install -g Microsoft.dotnet-interactive && \
+    /root/.dotnet/tools/dotnet-interactive jupyter install
 
 # Step 6: Set the default user back to jovyan
 USER jovyan
