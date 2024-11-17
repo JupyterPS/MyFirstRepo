@@ -1,34 +1,37 @@
-# Use a base image with Ubuntu (or similar) for .NET SDK
-FROM mcr.microsoft.com/dotnet/sdk:8.0 as base
+# Start with an Ubuntu base image
+FROM ubuntu:22.04 as base
 
-# Install necessary dependencies
-RUN apt-get update && \
-    apt-get install -y wget unzip curl ca-certificates apt-transport-https lsb-release
+# Install required dependencies and .NET SDK
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    ca-certificates \
+    lsb-release \
+    apt-transport-https
 
-# Install .NET SDK
+# Download the Microsoft package for Ubuntu and install it
 RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb" -O packages-microsoft-prod.deb && \
+    ls -l packages-microsoft-prod.deb && \
     dpkg -i packages-microsoft-prod.deb && \
     apt-get update && \
-    apt-get install -y dotnet-sdk-8.0
+    apt-get install -y dotnet-sdk-8.0 || tail -n 20 /var/log/apt/term.log
 
-# Install .NET Interactive Tool (for Jupyter integration)
+# Install .NET Interactive tools
 RUN dotnet tool install -g Microsoft.dotnet-interactive
 
-# Ensure the required kernel directory exists before installing .NET Interactive Jupyter kernels
+# Ensure the required Jupyter kernel directory exists
 RUN mkdir -p /root/.local/share/jupyter/kernels
 
 # Install .NET Interactive for Jupyter (C#, PowerShell, F#)
 RUN export PATH="$PATH:/root/.dotnet/tools" && \
     dotnet interactive jupyter install
 
-# Expose port for Jupyter Notebook if necessary
+# Expose port for Jupyter Lab if necessary
 EXPOSE 8888
 
 # Set the default working directory
 WORKDIR /workspace
 
-# Optional: Copy your application or files into the Docker image (uncomment and adjust as needed)
-# COPY . /workspace/
-
-# Set the entrypoint to run Jupyter Lab
+# Set entrypoint for running Jupyter Lab
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root"]
+
