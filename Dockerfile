@@ -32,21 +32,20 @@ WORKDIR $HOME
 USER root
 RUN apt-get update && apt-get install -y curl libicu-dev || apt-get install -y libicu65
 
-# Step 11: Set the correct user and home directory
+# Step 11: Install PowerShell and the PowerShell Kernel
+RUN apt-get update && apt-get install -y wget apt-transport-https software-properties-common \
+    && wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb" -O packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && apt-get update && apt-get install -y powershell \
+    && pwsh -Command "Install-Module -Name PowerShellJupyterKernel -Force -Scope CurrentUser" \
+    && pwsh -Command "Import-Module -Name PowerShellJupyterKernel; Install-PowerShellKernel" \
+    && rm packages-microsoft-prod.deb
+
+# Step 12: Set the correct user and home directory
 USER jovyan
 ENV HOME /home/${NB_USER}
 
-# Step 12: Set the default working directory to home directory
+# Step 13: Set the default working directory to home directory
 WORKDIR ${HOME}
-
-# Step 13: Expose JupyterLab port
-EXPOSE 8888
-
-# Step 14: Set the default command to start JupyterLab
-CMD ["start-notebook.sh"]
-
-
-# Command to start JupyterLab (default entrypoint)
-CMD ["start-notebook.sh"]
 
 
