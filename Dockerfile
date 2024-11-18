@@ -1,27 +1,40 @@
-# Use official JupyterLab base image
-FROM jupyter/base-notebook:latest
+# Start with an Ubuntu base image
+FROM ubuntu:22.04 as base
 
-# Install PowerShell for Ubuntu (for base images like `jupyter/base-notebook`)
+# Install required dependencies and .NET SDK
 RUN apt-get update && apt-get install -y \
     wget \
-    apt-transport-https \
-    software-properties-common \
-    && wget -q "https://packages.microsoft.com/config/ubuntu/20.04/prod.list" -O /etc/apt/sources.list.d/microsoft-prod.list \
-    && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-    && apt-get update \
-    && apt-get install -y powershell
+    curl \
+    ca-certificates \
+    lsb-release \
+    apt-transport-https
+    
+# Download the Microsoft package for Ubuntu and install it
+RUN wget -q "<https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb>" -O packages-microsoft-prod.deb && \
+    ls -l packages-microsoft-prod.deb && \
+    dpkg -i packages-microsoft-prod.deb && \
+    apt-get update && \
+    apt-get install -y dotnet-sdk-8.0 || tail -n 20 /var/log/apt/term.log
 
-# Install JupyterLab and PowerShell Kernel
-RUN pip install jupyterlab powershell_kernel
+# Install .NET Interactive tools
+RUN dotnet tool install -g Microsoft.dotnet-interactive
 
-# Install other required Python packages (if any)
-# RUN pip install nteract_on_jupyter
+# Ensure the required Jupyter kernel directory exists
+RUN mkdir -p /root/.local/share/jupyter/kernels
 
-# Register PowerShell Kernel
-RUN python -m powershell_kernel.install
+# Install .NET Interactive for Jupyter (C#, PowerShell, F#)
+RUN export PATH="$PATH:/root/.dotnet/tools" && \
+    dotnet interactive jupyter install
 
-# Expose the Jupyter port
+# Expose port for Jupyter Lab if necessary
 EXPOSE 8888
+
+# Set the default working directory
+WORKDIR /workspace
+
+# Set entrypoint for running Jupyter Lab
+CMD ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root"]
+
 
 # Set the default command to launch JupyterLab
 CMD ["start-notebook.sh"]
