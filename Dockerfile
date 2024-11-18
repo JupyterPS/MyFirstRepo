@@ -1,6 +1,8 @@
 # Start with an Ubuntu base image
 FROM ubuntu:22.04 as base
 
+RUN python -m pip install --user numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose    
+
 # Install required dependencies and .NET SDK
 RUN apt-get update && apt-get install -y \
     wget \
