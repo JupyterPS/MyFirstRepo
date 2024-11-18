@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip install jupyterlab powershell_kernel
 
 # Install other required Python packages (if any)
-RUN pip install nteract_on_jupyter
+# RUN pip install nteract_on_jupyter
 
 # Register PowerShell Kernel
 RUN python -m powershell_kernel.install
