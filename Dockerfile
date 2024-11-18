@@ -1,40 +1,60 @@
-# Start with an Ubuntu base image
-FROM ubuntu:22.04 as base
+# Use Jupyter's base image
+FROM jupyter/base-notebook:latest
 
-# Install required dependencies and .NET SDK
+# Set environment variables to skip telemetry
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+ENV POWERSHELL_TELEMETRY_OPTOUT=1
+
+# Switch to root user to install system packages
+USER root
+
+# Install required dependencies for dotnet and PowerShell
 RUN apt-get update && apt-get install -y \
-    wget \
     curl \
-    ca-certificates \
+    libssl-dev \
+    libicu-dev \
+    gnupg \
     lsb-release \
-    apt-transport-https
-    
-# Download the Microsoft package for Ubuntu and install it
-RUN wget -q "<https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb>" -O packages-microsoft-prod.deb && \
-    ls -l packages-microsoft-prod.deb && \
-    dpkg -i packages-microsoft-prod.deb && \
+    wget \
+    apt-transport-https \
+    software-properties-common \
+    unzip \
+    powershell \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install .NET 8.0 SDK and runtime via official Microsoft repositories
+RUN wget https://packages.microsoft.com/config/ubuntu/22.04/prod.list \
+    -O /etc/apt/sources.list.d/microsoft-prod.list && \
+    curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
     apt-get update && \
-    apt-get install -y dotnet-sdk-8.0 || tail -n 20 /var/log/apt/term.log
+    apt-get install -y dotnet-sdk-8.0
 
-# Install .NET Interactive tools
-RUN dotnet tool install -g Microsoft.dotnet-interactive
+# Install .NET tool globally: Microsoft.dotnet-interactive
+RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 \
+    --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json" \
+    && dotnet interactive jupyter install
 
-# Ensure the required Jupyter kernel directory exists
-RUN mkdir -p /root/.local/share/jupyter/kernels
+# Install the PowerShell kernel for Jupyter
+RUN pwsh -Command "Install-Module -Name Jupyter -Force" && \
+    pwsh -Command "Install-JupyterKernel"
 
-# Install .NET Interactive for Jupyter (C#, PowerShell, F#)
-RUN export PATH="$PATH:/root/.dotnet/tools" && \
-    dotnet interactive jupyter install
+# Set the PATH to include .NET tools and runtime
+ENV PATH="/home/jovyan/.dotnet:/home/jovyan/.dotnet/tools:$PATH"
+ENV DOTNET_ROOT="/home/jovyan/.dotnet"
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
-# Expose port for Jupyter Lab if necessary
+# Force the shell to recognize the new environment variables and tools
+RUN echo "export PATH=$PATH:/home/jovyan/.dotnet:/home/jovyan/.dotnet/tools" >> /home/jovyan/.bashrc && \
+    source /home/jovyan/.bashrc && \
+    dotnet --version && \
+    dotnet tool list -g
+
+# Switch back to the jovyan user (original user in jupyter/base-notebook)
+USER jovyan
+
+# Expose the Jupyter Notebook port
 EXPOSE 8888
 
-# Set the default working directory
-WORKDIR /workspace
-
-# Set entrypoint for running Jupyter Lab
-CMD ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root"]
-
-
-# Set the default command to launch JupyterLab
+# Start Jupyter Notebook
 CMD ["start-notebook.sh"]
