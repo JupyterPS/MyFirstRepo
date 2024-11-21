@@ -11,10 +11,10 @@ RUN python -m pip install -r requirements.txt
 RUN python -m pip install --upgrade --no-deps --force-reinstall notebook
 RUN python -m pip install --user numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose
 
-#RUN jupyter lab build 
+RUN jupyter lab build 
 # Install JupyterLab Git and related extensions
-#RUN python -m pip install jupyterlab-git jupyterlab_github
-#RUN jupyter labextension install @jupyterlab/git
+RUN python -m pip install jupyterlab-git jupyterlab_github
+RUN jupyter labextension install @jupyterlab/git
 
 #Working Directory
 # Install Jupyter themes and additional Python packages
