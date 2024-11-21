@@ -11,7 +11,7 @@ RUN python -m pip install -r requirements.txt
 RUN python -m pip install --upgrade --no-deps --force-reinstall notebook
 RUN python -m pip install --user numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose
 
-RUN jupyter lab build 
+#RUN jupyter lab build 
 # Install JupyterLab Git and related extensions
 RUN python -m pip install jupyterlab-git jupyterlab_github
 RUN jupyter labextension install @jupyterlab/git
@@ -109,7 +109,7 @@ ENV PATH="${PATH}:${HOME}/.dotnet/tools"
 RUN echo "$PATH"
  
 # Install kernel specs
-#RUN dotnet interactive jupyter install
+RUN dotnet interactive jupyter install
 
 # Enable telemetry once we install jupyter for the image
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
