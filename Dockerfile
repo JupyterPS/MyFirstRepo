@@ -16,7 +16,7 @@ RUN jupyter lab build --dev-build=False --minimize=False
 #RUN jupyter lab build 
 # Install JupyterLab Git and related extensions
 RUN python -m pip install jupyterlab-git jupyterlab_github
-RUN jupyter labextension install @jupyterlab/git
+#RUN jupyter labextension install @jupyterlab/git
 
 #Working Directory
 # Install Jupyter themes and additional Python packages
