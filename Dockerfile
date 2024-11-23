@@ -16,7 +16,7 @@ RUN jupyter lab build --dev-build=False --minimize=False
 #RUN jupyter lab build 
 # Install JupyterLab Git and related extensions
 RUN python -m pip install jupyterlab-git jupyterlab_github
-#RUN jupyter labextension install @jupyterlab/git
+RUN jupyter labextension install @jupyterlab/git
 
 #Working Directory
 # Install Jupyter themes and additional Python packages
@@ -47,36 +47,36 @@ ENV \
     DOTNET_TRY_CLI_TELEMETRY_OPTOUT=true
     
 # Install .NET CLI dependencies
-#RUN apt-get update \
-#    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-#        libc6 \
-#        libgcc1 \
-#        libgssapi-krb5-2 \
-#        libicu66 \
-#        libssl1.1 \
-#        libstdc++6 \
-#        zlib1g \
-#    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        libc6 \
+        libgcc1 \
+        libgssapi-krb5-2 \
+        libicu66 \
+        libssl1.1 \
+        libstdc++6 \
+        zlib1g \
+    && rm -rf /var/lib/apt/lists/*
     
 # Install .NET Core SDK
-#RUN dotnet_sdk_version=3.1.301 \
-#    && curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz \
-#    && dotnet_sha512='dd39931df438b8c1561f9a3bdb50f72372e29e5706d3fb4c490692f04a3d55f5acc0b46b8049bc7ea34dedba63c71b4c64c57032740cbea81eef1dce41929b4e' \
-#    && echo "$dotnet_sha512 dotnet.tar.gz" | sha512sum -c - \
-#    && mkdir -p /usr/share/dotnet \
-#    && tar -ozxf dotnet.tar.gz -C /usr/share/dotnet \
-#    && rm dotnet.tar.gz \
-#    && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
-#    # Trigger first run experience by running arbitrary cmd
-#    && dotnet help
+RUN dotnet_sdk_version=3.1.301 \
+    && curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz \
+    && dotnet_sha512='dd39931df438b8c1561f9a3bdb50f72372e29e5706d3fb4c490692f04a3d55f5acc0b46b8049bc7ea34dedba63c71b4c64c57032740cbea81eef1dce41929b4e' \
+    && echo "$dotnet_sha512 dotnet.tar.gz" | sha512sum -c - \
+    && mkdir -p /usr/share/dotnet \
+    && tar -ozxf dotnet.tar.gz -C /usr/share/dotnet \
+    && rm dotnet.tar.gz \
+    && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
+    # Trigger first run experience by running arbitrary cmd
+    && dotnet help
     
 # Copy notebooks
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
 
 #RUN apt-get update && \
-#    apt-get install -y libicu66 curl && \
-#    apt-get clean
+    apt-get install -y libicu66 curl && \
+    apt-get clean
 
 # Copy packages 
 COPY ./NuGet.config ${HOME}/nuget.config
@@ -91,13 +91,13 @@ RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 
 # Download and install .NET SDK
-#RUN dotnet_sdk_version=3.1.200 && \
-#    curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz && \
-#    echo "Validating dotnet tarball..." && \
-#    mkdir -p /usr/share/dotnet && \
-#    tar -ozxf dotnet.tar.gz -C /usr/share/dotnet && \
-#    rm dotnet.tar.gz && \
-#    ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
+RUN dotnet_sdk_version=3.1.200 && \
+    curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz && \
+    echo "Validating dotnet tarball..." && \
+    mkdir -p /usr/share/dotnet && \
+    tar -ozxf dotnet.tar.gz -C /usr/share/dotnet && \
+   rm dotnet.tar.gz && \
+    ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
 
 #Install nteract 
 RUN pip install nteract_on_jupyter
