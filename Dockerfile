@@ -74,9 +74,9 @@ ENV \
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
 
-RUN apt-get update && \
-    apt-get install -y libicu66 curl && \
-    apt-get clean
+#RUN apt-get update && \
+#    apt-get install -y libicu66 curl && \
+#    apt-get clean
 
 # Copy packages 
 COPY ./NuGet.config ${HOME}/nuget.config
