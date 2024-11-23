@@ -91,13 +91,13 @@ RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 
 # Download and install .NET SDK
-RUN dotnet_sdk_version=3.1.200 && \
-    curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz && \
-    echo "Validating dotnet tarball..." && \
-    mkdir -p /usr/share/dotnet && \
-    tar -ozxf dotnet.tar.gz -C /usr/share/dotnet && \
-    rm dotnet.tar.gz && \
-    ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
+#RUN dotnet_sdk_version=3.1.200 && \
+#    curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz && \
+#    echo "Validating dotnet tarball..." && \
+#    mkdir -p /usr/share/dotnet && \
+#    tar -ozxf dotnet.tar.gz -C /usr/share/dotnet && \
+#    rm dotnet.tar.gz && \
+#    ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
 
 #Install nteract 
 RUN pip install nteract_on_jupyter
