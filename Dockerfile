@@ -76,7 +76,7 @@ USER ${USER}
 
 # Step 19: Install nteract
 RUN pip install nteract_on_jupyter
- 
+
 # Step 20: Install Microsoft.DotNet.Interactive and Jupyter kernel
 RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
 ENV PATH="${PATH}:${HOME}/.dotnet/tools"
