@@ -14,7 +14,6 @@ RUN python -m pip install --user numpy spotipy scipy matplotlib ipython jupyter 
 
 # Step 5: Install JupyterLab Git and related extensions
 RUN python -m pip install jupyterlab-git jupyterlab_github
-RUN jupyter labextension install @jupyterlab/git
 
 # Step 6: Install Jupyter themes and additional Python packages
 RUN python -m pip install jupyterthemes numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose ipywidgets
