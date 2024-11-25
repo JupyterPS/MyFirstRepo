@@ -1,37 +1,44 @@
-# Step 1: Use the Jupyter base-notebook as the base image
+# Step 1: Use the official .NET Core SDK image as the base image for building the .NET components
+FROM mcr.microsoft.com/dotnet/sdk:3.1 AS build
+
+# Step 2: Copy the content and restore as distinct layers
+WORKDIR /source
+COPY . .
+
+# Step 3: Use the Jupyter base-notebook as the base image for the final build
 FROM jupyter/base-notebook:latest
 
-# Step 2: Upgrade pip
+# Step 4: Upgrade pip
 RUN python -m pip install --upgrade pip
 
-# Step 3: Copy and install Python dependencies
+# Step 5: Copy and install Python dependencies
 COPY requirements.txt ./requirements.txt 
 RUN python -m pip install -r requirements.txt
 
-# Step 4: Reinstall Jupyter notebook for compatibility
+# Step 6: Reinstall Jupyter notebook for compatibility
 RUN python -m pip install --upgrade --no-deps --force-reinstall notebook
 RUN python -m pip install --user numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose
 
-# Step 5: Install JupyterLab Git and related extensions
+# Step 7: Install JupyterLab Git and related extensions
 RUN python -m pip install jupyterlab-git jupyterlab_github
 
-# Step 6: Install Jupyter themes and additional Python packages
+# Step 8: Install Jupyter themes and additional Python packages
 RUN python -m pip install jupyterthemes numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose ipywidgets
 
-# Step 7: Install Tornado
+# Step 9: Install Tornado
 RUN python -m pip install tornado==5.1.1
 
-# Step 8: Set up the working directory
+# Step 10: Set up the working directory
 WORKDIR /home/jovyan
 
-# Step 9: Set up user and home environment variables
+# Step 11: Set up user and home environment variables
 ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV USER ${NB_USER}
 ENV NB_UID ${NB_UID}
 ENV HOME /home/${NB_USER}
 
-# Step 10: Change to root user to install system dependencies
+# Step 12: Change to root user to install system dependencies
 USER root
 RUN apt-get update && apt-get install -y curl
 ENV DOTNET_RUNNING_IN_CONTAINER=true \
@@ -39,7 +46,7 @@ ENV DOTNET_RUNNING_IN_CONTAINER=true \
     NUGET_XMLDOC_MODE=skip \
     DOTNET_TRY_CLI_TELEMETRY_OPTOUT=true
 
-# Step 11: Install .NET CLI dependencies and OpenSSL
+# Step 13: Install .NET CLI dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         libc6 \
         libgcc1 \
@@ -47,60 +54,47 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
         libicu-dev \
         libssl-dev \
         libstdc++6 \
-        zlib1g \
-    && ln -s /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libssl1.1.so.1.1 \
-    && rm -rf /var/lib/apt/lists/*
+        zlib1g && rm -rf /var/lib/apt/lists/*
 
-# Step 12: Install .NET Core SDK
-RUN dotnet_sdk_version=3.1.301 && \
-    curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz && \
-    dotnet_sha512='dd39931df438b8c1561f9a3bdb50f72372e29e5706d3fb4c490692f04a3d55f5acc0b46b8049bc7ea34dedba63c71b4c64c57032740cbea81eef1dce41929b4e' && \
-    echo "$dotnet_sha512 dotnet.tar.gz" | sha512sum -c - && \
-    mkdir -p /usr/share/dotnet && tar -ozxf dotnet.tar.gz -C /usr/share/dotnet && \
-    rm dotnet.tar.gz && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet && \
-    dotnet help
+# Step 14: Copy the .NET SDK from the build stage
+COPY --from=build /usr/share/dotnet /usr/share/dotnet
+COPY --from=build /usr/bin/dotnet /usr/bin/dotnet
 
-# Step 13: Copy notebooks
+# Step 15: Copy notebooks and configuration files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
 
-# Step 14: Install additional dependencies
+# Step 16: Install additional dependencies
 RUN apt-get update && apt-get install -y libicu-dev curl && apt-get clean
 
-# Step 15: Copy packages 
+# Step 17: Copy packages
 COPY ./NuGet.config ${HOME}/nuget.config
 
-# Step 16: Set file ownership
+# Step 18: Set file ownership
 RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 
-# Step 17: Download and install .NET SDK
-RUN dotnet_sdk_version=3.1.200 && \
-    curl -SL --output dotnet.tar.gz https://dotnetcli.azureedge.net/dotnet/Sdk/$dotnet_sdk_version/dotnet-sdk-$dotnet_sdk_version-linux-x64.tar.gz && \
-    mkdir -p /usr/share/dotnet && tar -ozxf dotnet.tar.gz -C /usr/share/dotnet && \
-    rm dotnet.tar.gz && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
-
-# Step 18: Install nteract
+# Step 19: Install nteract
 RUN pip install nteract_on_jupyter
 
-# Step 19: Install Microsoft.DotNet.Interactive and Jupyter kernel
+# Step 20: Install Microsoft.DotNet.Interactive and Jupyter kernel
 RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
 ENV PATH="${PATH}:${HOME}/.dotnet/tools"
 RUN dotnet interactive jupyter install
 
-# Step 20: Enable telemetry
+# Step 21: Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
-# Step 21: Copy project files
+# Step 22: Copy project files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/Notebooks/
 
-# Step 22: Set permissions for the notebook user
+# Step 23: Set permissions for the notebook user
 RUN chown -R ${NB_UID} ${HOME}
 
-# Step 23: Set default user and working directory
+# Step 24: Set default user and working directory
 USER ${USER}
 WORKDIR ${HOME}/Notebooks/
 
-# Step 24: Set root to Notebooks
+# Step 25: Set root to Notebooks
 WORKDIR ${HOME}/WindowsPowerShell
