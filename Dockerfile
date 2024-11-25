@@ -45,7 +45,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
         libgcc1 \
         libgssapi-krb5-2 \
         libicu-dev \
-        libssl-dev \
+        libssl1.0.0 \
         libstdc++6 \
         zlib1g && rm -rf /var/lib/apt/lists/*
 
