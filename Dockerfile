@@ -1,4 +1,4 @@
-# Step 1: Use a base image that includes Jupyter with Python and .NET
+# Step 1: Use a base image that includes both Jupyter and .NET SDK
 FROM jupyter/datascience-notebook:latest
 
 # Step 2: Upgrade pip
@@ -35,39 +35,43 @@ ENV HOME /home/${NB_USER}
 USER root
 RUN apt-get update && apt-get install -y libicu-dev curl && apt-get clean
 
-# Step 11: Install .NET SDK using official Microsoft script
-RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
-    chmod +x dotnet-install.sh && \
-    ./dotnet-install.sh --channel 3.1 && \
-    export PATH="/root/.dotnet:/root/.dotnet/tools:$PATH" && \
-    dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json" && \
-    dotnet interactive jupyter install
+# Step 11: Install .NET SDK using the official Microsoft script and handle dependencies
+RUN wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
+    dpkg -i packages-microsoft-prod.deb && \
+    apt-get update && \
+    apt-get install -y apt-transport-https && \
+    apt-get install -y dotnet-sdk-3.1
 
-# Step 12: Copy notebooks and configuration files
+# Step 12: Install Microsoft.DotNet.Interactive and Jupyter kernel
+RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
+ENV PATH="${PATH}:${HOME}/.dotnet/tools"
+RUN dotnet interactive jupyter install
+
+# Step 13: Copy notebooks and configuration files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
 COPY ./NuGet.config ${HOME}/nuget.config
 
-# Step 13: Set file ownership
+# Step 14: Set file ownership
 RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 
-# Step 14: Install nteract
+# Step 15: Install nteract
 RUN pip install nteract_on_jupyter
 
-# Step 15: Enable telemetry
+# Step 16: Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
-# Step 16: Copy project files
+# Step 17: Copy project files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/Notebooks/
 
-# Step 17: Set permissions for the notebook user
+# Step 18: Set permissions for the notebook user
 RUN chown -R ${NB_UID} ${HOME}
 
-# Step 18: Set default user and working directory
+# Step 19: Set default user and working directory
 USER ${USER}
 WORKDIR ${HOME}/Notebooks/
 
-# Step 19: Set root to Notebooks
+# Step 20: Set root to Notebooks
 WORKDIR ${HOME}/WindowsPowerShell
