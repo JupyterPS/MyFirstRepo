@@ -1,5 +1,5 @@
 # Step 1: Use a base image that includes Jupyter with Python and .NET
-FROM jupyter/base-notebook:latest
+FROM jupyter/datascience-notebook:latest
 
 # Step 2: Upgrade pip
 RUN python -m pip install --upgrade pip
@@ -31,22 +31,19 @@ ENV USER ${NB_USER}
 ENV NB_UID ${NB_UID}
 ENV HOME /home/${NB_USER}
 
-# Step 10: Install additional system dependencies
+# Step 10: Change to root user to install system dependencies
 USER root
 RUN apt-get update && apt-get install -y libicu-dev curl && apt-get clean
 
-# Step 11: Update existing Miniconda installation
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
-    bash miniconda.sh -b -u -p /opt/conda && \
-    /opt/conda/bin/conda create -y -n dotnet python=3.8 && \
-    /opt/conda/bin/conda install -y -n dotnet -c conda-forge dotnet && \
-    /opt/conda/bin/conda clean -ya
-ENV PATH /opt/conda/envs/dotnet/bin:$PATH
+# Step 11: Install .NET SDK using official Microsoft script
+RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
+    chmod +x dotnet-install.sh && \
+    ./dotnet-install.sh --channel 3.1
 
 # Step 12: Install Microsoft.DotNet.Interactive and Jupyter kernel
-RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
-ENV PATH="${PATH}:${HOME}/.dotnet/tools"
-RUN dotnet interactive jupyter install
+RUN /root/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
+ENV PATH="${PATH}:/root/.dotnet/tools"
+RUN /root/.dotnet/dotnet interactive jupyter install
 
 # Step 13: Copy notebooks and configuration files
 COPY ./config ${HOME}/.jupyter/
