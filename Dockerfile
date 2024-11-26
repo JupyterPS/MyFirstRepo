@@ -36,47 +36,41 @@ ENV HOME /home/${NB_USER}
 
 # Step 11: Change to root user to install system dependencies
 USER root
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y curl libicu-dev && apt-get clean
 
 # Step 12: Copy the .NET SDK from the base stage
 COPY --from=base /usr/share/dotnet /usr/share/dotnet
 COPY --from=base /usr/bin/dotnet /usr/bin/dotnet
 
 # Step 13: Copy notebooks and configuration files
-COPY ./config ${HOME}/.jupyter/
-COPY ./ ${HOME}/WindowsPowerShell/
+COPY ./config /home/jovyan/.jupyter/
+COPY ./ /home/jovyan/WindowsPowerShell/
+COPY ./NuGet.config /home/jovyan/nuget.config
 
-# Step 14: Install additional dependencies
-RUN apt-get update && apt-get install -y libicu-dev curl && apt-get clean
-
-# Step 15: Copy packages
-COPY ./NuGet.config ${HOME}/nuget.config
-
-# Step 16: Set file ownership
+# Step 14: Set file ownership
 RUN chown -R ${NB_UID} ${HOME}
-USER ${USER}
 
-# Step 17: Install nteract
+# Step 15: Install nteract
 RUN pip install nteract_on_jupyter
 
-# Step 18: Install Microsoft.DotNet.Interactive and Jupyter kernel
+# Step 16: Install Microsoft.DotNet.Interactive and Jupyter kernel
 RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
 ENV PATH="${PATH}:${HOME}/.dotnet/tools"
 RUN dotnet interactive jupyter install
 
-# Step 19: Enable telemetry
+# Step 17: Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
-# Step 20: Copy project files
-COPY ./config ${HOME}/.jupyter/
-COPY ./ ${HOME}/Notebooks/
+# Step 18: Copy project files
+COPY ./config /home/jovyan/.jupyter/
+COPY ./ /home/jovyan/Notebooks/
 
-# Step 21: Set permissions for the notebook user
+# Step 19: Set permissions for the notebook user
 RUN chown -R ${NB_UID} ${HOME}
 
-# Step 22: Set default user and working directory
+# Step 20: Set default user and working directory
 USER ${USER}
-WORKDIR ${HOME}/Notebooks/
+WORKDIR /home/jovyan/Notebooks/
 
-# Step 23: Set root to Notebooks
-WORKDIR ${HOME}/WindowsPowerShell
+# Step 21: Set root to Notebooks
+WORKDIR /home/jovyan/WindowsPowerShell
