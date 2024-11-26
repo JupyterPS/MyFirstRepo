@@ -42,7 +42,7 @@ RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
 
 # Step 12: Add .NET to PATH and reload the shell
 ENV PATH="/root/.dotnet:/root/.dotnet/tools:$PATH"
-RUN echo 'export PATH="$PATH:/root/.dotnet:/root/.dotnet/tools"' >> /root/.bashrc
+RUN /bin/bash -c "source ~/.bashrc"
 
 # Step 13: Install Microsoft.DotNet.Interactive and Jupyter kernel
 RUN /root/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
