@@ -2,6 +2,7 @@
 FROM jupyter/base-notebook:latest
 
 # Upgrade pip and install required packages, Node.js, and dependencies
+USER root
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
@@ -11,12 +12,16 @@ RUN apt-get update && apt-get install -y \
     wget \
     libssl-dev \
     git \
-    sudo \
-    && curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n \
-    && chmod +x /usr/local/bin/n \
-    && n 14.17.0 \
-    && python3 -m pip install --upgrade pip \
-    && python3 -m pip install notebook numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose
+    sudo
+
+# Install Node.js
+RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n && \
+    chmod +x /usr/local/bin/n && \
+    n 14.17.0
+
+# Upgrade pip and install Python dependencies
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install notebook numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose
 
 # Install JupyterLab Git and related extensions
 RUN python -m pip install jupyterlab-git jupyterlab_github
