@@ -38,41 +38,36 @@ RUN apt-get update && apt-get install -y libicu-dev curl && apt-get clean
 # Step 11: Install .NET SDK using official Microsoft script
 RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
-    ./dotnet-install.sh --channel 3.1
+    ./dotnet-install.sh --channel 3.1 && \
+    export PATH="/root/.dotnet:/root/.dotnet/tools:$PATH" && \
+    dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json" && \
+    dotnet interactive jupyter install
 
-# Step 12: Add .NET to PATH and reload the shell
-ENV PATH="/root/.dotnet:/root/.dotnet/tools:$PATH"
-RUN /bin/bash -c "source ~/.bashrc"
-
-# Step 13: Install Microsoft.DotNet.Interactive and Jupyter kernel
-RUN /root/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
-RUN /root/.dotnet/dotnet interactive jupyter install
-
-# Step 14: Copy notebooks and configuration files
+# Step 12: Copy notebooks and configuration files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
 COPY ./NuGet.config ${HOME}/nuget.config
 
-# Step 15: Set file ownership
+# Step 13: Set file ownership
 RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 
-# Step 16: Install nteract
+# Step 14: Install nteract
 RUN pip install nteract_on_jupyter
 
-# Step 17: Enable telemetry
+# Step 15: Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
-# Step 18: Copy project files
+# Step 16: Copy project files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/Notebooks/
 
-# Step 19: Set permissions for the notebook user
+# Step 17: Set permissions for the notebook user
 RUN chown -R ${NB_UID} ${HOME}
 
-# Step 20: Set default user and working directory
+# Step 18: Set default user and working directory
 USER ${USER}
 WORKDIR ${HOME}/Notebooks/
 
-# Step 21: Set root to Notebooks
+# Step 19: Set root to Notebooks
 WORKDIR ${HOME}/WindowsPowerShell
