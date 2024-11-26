@@ -35,21 +35,20 @@ ENV HOME /home/${NB_USER}
 USER root
 RUN apt-get update && apt-get install -y libicu-dev curl && apt-get clean
 
-# Step 11: Install .NET SDK using the official Microsoft script, update PATH, and verify installation
+# Step 11: Install .NET SDK using the official Microsoft script and update PATH
 RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --channel 3.1 && \
-    export PATH="/root/.dotnet:/root/.dotnet/tools:$PATH" && \
-    dotnet --info
+    echo "export PATH=/root/.dotnet:/root/.dotnet/tools:$PATH" >> /root/.bashrc
 
-# Step 12: Install .NET Interactive tool
-RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
+# Step 12: Verify .NET SDK installation
+RUN /bin/bash -c "source /root/.bashrc && dotnet --info"
 
-# Step 13: Verify dotnet and dotnet-interactive installations
-RUN echo $PATH && ls -la /root/.dotnet/tools && dotnet --info && dotnet-interactive --version
+# Step 13: Install .NET Interactive tool
+RUN /bin/bash -c "source /root/.bashrc && dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'"
 
 # Step 14: Install .NET Interactive Jupyter kernel
-RUN dotnet interactive jupyter install
+RUN /bin/bash -c "source /root/.bashrc && dotnet interactive jupyter install"
 
 # Step 15: Copy notebooks and configuration files
 COPY ./config ${HOME}/.jupyter/
