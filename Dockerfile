@@ -32,6 +32,15 @@ RUN python -m pip install jupyterthemes numpy spotipy scipy matplotlib ipython j
 # Install Tornado
 RUN python -m pip install tornado==5.1.1
 
+# Install .NET SDK using the official Microsoft script, update PATH, and install tools in one RUN command
+RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
+    chmod +x dotnet-install.sh && \
+    ./dotnet-install.sh --channel 3.1 && \
+    export PATH="/root/.dotnet:/root/.dotnet/tools:$PATH" && \
+    dotnet --info && \
+    dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json" && \
+    dotnet interactive jupyter install
+
 # Set up the working directory
 WORKDIR /home/jovyan
 
@@ -41,21 +50,6 @@ ARG NB_UID=1000
 ENV USER ${NB_USER}
 ENV NB_UID ${NB_UID}
 ENV HOME /home/${NB_USER}
-
-# Change to root user to install system dependencies
-USER root
-
-# Install .NET SDK using the official Microsoft script
-RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
-    chmod +x dotnet-install.sh && \
-    ./dotnet-install.sh --channel 3.1
-
-# Ensure .NET tools are available in PATH
-ENV PATH="/root/.dotnet:/root/.dotnet/tools:$PATH"
-
-# Install .NET Interactive tool and Jupyter kernel
-RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json" && \
-    dotnet interactive jupyter install
 
 # Copy notebooks and configuration files
 COPY ./config ${HOME}/.jupyter/
