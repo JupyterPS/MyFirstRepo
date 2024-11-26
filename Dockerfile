@@ -40,37 +40,44 @@ RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --channel 3.1
 
-# Step 12: Install Microsoft.DotNet.Interactive and Jupyter kernel
-# Ensuring environment variables are correctly set
-RUN export PATH="/root/.dotnet:/root/.dotnet/tools:$PATH" && \
-    /root/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json" && \
-    /root/.dotnet/dotnet interactive jupyter install
+# Step 12: Install .NET Interactive tool
+RUN /root/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
 
-# Step 13: Copy notebooks and configuration files
+# Step 13: Add .dotnet/tools to PATH for jovyan user
+ENV PATH="/home/jovyan/.dotnet/tools:/root/.dotnet:/root/.dotnet/tools:${PATH}"
+
+# Step 14: Verify dotnet and dotnet-interactive installations
+RUN echo $PATH
+RUN ls -la /home/jovyan/.dotnet/tools
+RUN ls -la /root/.dotnet
+RUN dotnet --info
+RUN dotnet-interactive --version
+
+# Step 15: Copy notebooks and configuration files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
 COPY ./NuGet.config ${HOME}/nuget.config
 
-# Step 14: Set file ownership
+# Step 16: Set file ownership
 RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 
-# Step 15: Install nteract
+# Step 17: Install nteract
 RUN pip install nteract_on_jupyter
 
-# Step 16: Enable telemetry
+# Step 18: Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
-# Step 17: Copy project files
+# Step 19: Copy project files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/Notebooks/
 
-# Step 18: Set permissions for the notebook user
+# Step 20: Set permissions for the notebook user
 RUN chown -R ${NB_UID} ${HOME}
 
-# Step 19: Set default user and working directory
+# Step 21: Set default user and working directory
 USER ${USER}
 WORKDIR ${HOME}/Notebooks/
 
-# Step 20: Set root to Notebooks
+# Step 22: Set root to Notebooks
 WORKDIR ${HOME}/WindowsPowerShell
