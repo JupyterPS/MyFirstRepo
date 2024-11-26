@@ -1,4 +1,4 @@
-# Step 1: Use the Jupyter base-notebook as the base image
+# Step 1: Use the official Jupyter base-notebook as the base image
 FROM jupyter/base-notebook:latest
 
 # Step 2: Upgrade pip
@@ -40,35 +40,36 @@ RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --channel 3.1
 
-# Step 12: Add .dotnet/tools to PATH for the installation session
+# Step 12: Ensure .NET tools are available in PATH for the entire session
 ENV PATH="/root/.dotnet:/root/.dotnet/tools:$PATH"
 
-# Step 13: Install .NET Interactive tool
-RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
+# Step 13: Verify dotnet installation
+RUN dotnet --info
 
-# Step 14: Verify dotnet and dotnet-interactive installations
-RUN echo $PATH && ls -la /root/.dotnet/tools && dotnet --info && dotnet-interactive --version
+# Step 14: Install .NET Interactive tool and Jupyter kernel
+RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json" && \
+    dotnet interactive jupyter install
 
-# Step 15: Install .NET Interactive Jupyter kernel
-RUN dotnet interactive jupyter install
-
-# Step 16: Copy notebooks and configuration files
+# Step 15: Copy notebooks and configuration files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
 COPY ./NuGet.config ${HOME}/nuget.config
 
-# Step 17: Set file ownership and permissions
+# Step 16: Set file ownership
 RUN chown -R ${NB_UID} ${HOME}
+USER ${USER}
 
-# Step 18: Install nteract
+# Step 17: Install nteract
 RUN pip install nteract_on_jupyter
 
-# Step 19: Enable telemetry
+# Step 18: Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
-# Step 20: Copy project files and set permissions
+# Step 19: Copy project files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/Notebooks/
+
+# Step 20: Set permissions for the notebook user
 RUN chown -R ${NB_UID} ${HOME}
 
 # Step 21: Set default user and working directory
