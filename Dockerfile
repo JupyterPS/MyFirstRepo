@@ -1,16 +1,22 @@
 # Use the official Jupyter base-notebook as the base image
 FROM jupyter/base-notebook:latest
 
-# Upgrade pip
-RUN python -m pip install --upgrade pip
-
-# Copy and install Python dependencies
-COPY requirements.txt ./requirements.txt
-RUN python -m pip install -r requirements.txt
-
-# Reinstall Jupyter notebook for compatibility
-RUN python -m pip install --upgrade --no-deps --force-reinstall notebook
-RUN python -m pip install --user numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose
+# Upgrade pip and install required packages, Node.js, and dependencies
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-dev \
+    curl \
+    libicu-dev \
+    build-essential \
+    wget \
+    libssl-dev \
+    git \
+    sudo \
+    && curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n \
+    && chmod +x /usr/local/bin/n \
+    && n 14.17.0 \
+    && python3 -m pip install --upgrade pip \
+    && python3 -m pip install notebook numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose
 
 # Install JupyterLab Git and related extensions
 RUN python -m pip install jupyterlab-git jupyterlab_github
@@ -33,7 +39,6 @@ ENV HOME /home/${NB_USER}
 
 # Change to root user to install system dependencies
 USER root
-RUN apt-get update && apt-get install -y libicu-dev curl libssl1.1
 
 # Install .NET SDK using the official Microsoft script
 RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
