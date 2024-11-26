@@ -40,36 +40,39 @@ RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --channel 3.1
 
-# Step 12: Add .NET to PATH and install dotnet-interactive
-ENV PATH="${PATH}:/root/.dotnet:/root/.dotnet/tools"
-RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
-RUN dotnet interactive jupyter install
+# Step 12: Add .NET to PATH and reload the shell
+ENV PATH="/root/.dotnet:/root/.dotnet/tools:$PATH"
+RUN echo 'export PATH="$PATH:/root/.dotnet:/root/.dotnet/tools"' >> /root/.bashrc
 
-# Step 13: Copy notebooks and configuration files
+# Step 13: Install Microsoft.DotNet.Interactive and Jupyter kernel
+RUN /root/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
+RUN /root/.dotnet/dotnet interactive jupyter install
+
+# Step 14: Copy notebooks and configuration files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
 COPY ./NuGet.config ${HOME}/nuget.config
 
-# Step 14: Set file ownership
+# Step 15: Set file ownership
 RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 
-# Step 15: Install nteract
+# Step 16: Install nteract
 RUN pip install nteract_on_jupyter
 
-# Step 16: Enable telemetry
+# Step 17: Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
-# Step 17: Copy project files
+# Step 18: Copy project files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/Notebooks/
 
-# Step 18: Set permissions for the notebook user
+# Step 19: Set permissions for the notebook user
 RUN chown -R ${NB_UID} ${HOME}
 
-# Step 19: Set default user and working directory
+# Step 20: Set default user and working directory
 USER ${USER}
 WORKDIR ${HOME}/Notebooks/
 
-# Step 20: Set root to Notebooks
+# Step 21: Set root to Notebooks
 WORKDIR ${HOME}/WindowsPowerShell
