@@ -35,9 +35,9 @@ ENV HOME /home/${NB_USER}
 USER root
 RUN apt-get update && apt-get install -y libicu-dev curl && apt-get clean
 
-# Step 11: Use Miniconda for .NET installation to avoid conflicts
+# Step 11: Update existing Miniconda installation
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
-    bash miniconda.sh -b -p /opt/conda && \
+    bash miniconda.sh -b -u -p /opt/conda && \
     /opt/conda/bin/conda create -y -n dotnet python=3.8 && \
     /opt/conda/bin/conda install -y -n dotnet -c conda-forge dotnet && \
     /opt/conda/bin/conda clean -ya
