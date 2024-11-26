@@ -1,5 +1,5 @@
-# Step 1: Use a base image that includes both Jupyter and .NET SDK
-FROM jupyter/datascience-notebook:latest
+# Step 1: Use a base image that includes Jupyter with Python and .NET
+FROM jupyter/base-notebook:latest
 
 # Step 2: Upgrade pip
 RUN python -m pip install --upgrade pip
@@ -31,50 +31,48 @@ ENV USER ${NB_USER}
 ENV NB_UID ${NB_UID}
 ENV HOME /home/${NB_USER}
 
-# Step 10: Change to root user to install system dependencies
+# Step 10: Install additional system dependencies
 USER root
-
-# Step 11: Add Microsoft package repository and install .NET SDK
-RUN wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
-    dpkg -i packages-microsoft-prod.deb && \
-    apt-get update && \
-    apt-get install -y dotnet-sdk-3.1
-
-# Step 12: Install additional system dependencies
 RUN apt-get update && apt-get install -y libicu-dev curl && apt-get clean
+
+# Step 11: Use Miniconda for .NET installation to avoid conflicts
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
+    bash miniconda.sh -b -p /opt/conda && \
+    /opt/conda/bin/conda create -y -n dotnet python=3.8 && \
+    /opt/conda/bin/conda install -y -n dotnet -c conda-forge dotnet && \
+    /opt/conda/bin/conda clean -ya
+ENV PATH /opt/conda/envs/dotnet/bin:$PATH
+
+# Step 12: Install Microsoft.DotNet.Interactive and Jupyter kernel
+RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
+ENV PATH="${PATH}:${HOME}/.dotnet/tools"
+RUN dotnet interactive jupyter install
 
 # Step 13: Copy notebooks and configuration files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
-
-# Step 14: Copy packages
 COPY ./NuGet.config ${HOME}/nuget.config
 
-# Step 15: Set file ownership
+# Step 14: Set file ownership
 RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 
-# Step 16: Install nteract
+# Step 15: Install nteract
 RUN pip install nteract_on_jupyter
- 
-# Step 17: Install Microsoft.DotNet.Interactive and Jupyter kernel
-RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
-ENV PATH="${PATH}:${HOME}/.dotnet/tools"
-RUN dotnet interactive jupyter install
- 
-# Step 18: Enable telemetry
+
+# Step 16: Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
-# Step 19: Copy project files
+# Step 17: Copy project files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/Notebooks/
 
-# Step 20: Set permissions for the notebook user
+# Step 18: Set permissions for the notebook user
 RUN chown -R ${NB_UID} ${HOME}
 
-# Step 21: Set default user and working directory
+# Step 19: Set default user and working directory
 USER ${USER}
 WORKDIR ${HOME}/Notebooks/
 
-# Step 22: Set root to Notebooks
+# Step 20: Set root to Notebooks
 WORKDIR ${HOME}/WindowsPowerShell
