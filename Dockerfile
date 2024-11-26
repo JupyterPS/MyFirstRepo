@@ -40,10 +40,10 @@ RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --channel 3.1
 
-# Step 12: Install Microsoft.DotNet.Interactive and Jupyter kernel
-RUN /root/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
-ENV PATH="${PATH}:/root/.dotnet/tools"
-RUN /root/.dotnet/dotnet interactive jupyter install
+# Step 12: Add .NET to PATH and install dotnet-interactive
+ENV PATH="${PATH}:/root/.dotnet:/root/.dotnet/tools"
+RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json"
+RUN dotnet interactive jupyter install
 
 # Step 13: Copy notebooks and configuration files
 COPY ./config ${HOME}/.jupyter/
