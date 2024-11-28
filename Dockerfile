@@ -1,11 +1,8 @@
 # Use a specific tag of the Jupyter base-notebook as the base image
 FROM jupyter/base-notebook:latest
 
-# Clean Docker Environment
-USER root
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Upgrade pip and install required packages, Node.js, and dependencies
+USER root
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
@@ -15,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     libssl-dev \
     git \
-    sudo && apt-get clean && rm -rf /var/lib/apt/lists/*
+    sudo
 
 # Install Node.js
 RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n && \
@@ -38,25 +35,24 @@ RUN python -m pip install jupyterthemes ipywidgets
 # Install Tornado
 RUN python -m pip install tornado==5.1.1
 
-# Install .NET SDK using the official Microsoft script with detailed logging
+# Install .NET SDK using the official Microsoft script
 RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
-    ./dotnet-install.sh --channel 3.1 && \
-    ls -la /root/.dotnet && \
+    ./dotnet-install.sh --channel 3.1
+
+# Verify .NET SDK installation in /home/jovyan/.dotnet
+RUN ls -la /home/jovyan/.dotnet && \
     echo "DOTNET SDK installation completed."
 
-# Verify .NET SDK installation
-RUN /root/.dotnet/dotnet --info || { echo "dotnet installation failed"; exit 1; }
-
 # Set the PATH environment variable
-ENV PATH="/root/.dotnet:/root/.dotnet/tools:${PATH}"
-ENV DOTNET_ROOT="/root/.dotnet"
+ENV PATH="/home/jovyan/.dotnet:/home/jovyan/.dotnet/tools:${PATH}"
+ENV DOTNET_ROOT="/home/jovyan/.dotnet"
 
 # Install .NET Interactive tool
-RUN /root/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'
+RUN /home/jovyan/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'
 
 # Install .NET Interactive Jupyter kernel
-RUN /root/.dotnet/dotnet interactive jupyter install
+RUN /home/jovyan/.dotnet/dotnet interactive jupyter install
 
 # Set up the working directory
 WORKDIR /home/jovyan
