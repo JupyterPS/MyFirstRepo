@@ -10,8 +10,6 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     build-essential \
     wget \
-    libssl-dev \
-    libssl1.1 \
     git \
     sudo
 
@@ -40,6 +38,10 @@ RUN python -m pip install tornado==5.1.1
 RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --channel 3.1
+
+# Manually download and install libssl1.1
+RUN wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb && \
+    dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
 
 # Verify .NET SDK installation in /home/jovyan/.dotnet
 RUN ls -la /home/jovyan/.dotnet && \
