@@ -1,4 +1,4 @@
-# Step 1: Use a specific tag of the Jupyter base-notebook as the base image
+# Step 1: Use the specific tag of the Jupyter base-notebook as the base image
 FROM jupyter/base-notebook:latest
 
 # Step 2: Upgrade pip and install required packages, Node.js, and dependencies
