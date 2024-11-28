@@ -1,4 +1,4 @@
-# Use a specific tag of the Jupyter base-notebook as the base image
+# Use the specific tag of the Jupyter base-notebook as the base image
 FROM jupyter/base-notebook:latest
 
 # Clean Docker Environment
@@ -73,6 +73,24 @@ COPY ./NuGet.config ${HOME}/nuget.config
 
 # Set file ownership and permissions
 RUN chown -R ${NB_UID} ${HOME}
+USER ${USER}
+
+# Install nteract
+RUN pip install nteract_on_jupyter
+
+# Enable telemetry
+ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
+
+# Copy project files and set permissions
+COPY ./config ${HOME}/.jupyter/
+COPY ./ ${HOME}/Notebooks/
+RUN chown -R ${NB_UID} ${HOME}
+
+# Set default user and working directory
+USER ${USER}
+WORKDIR ${HOME}/Notebooks/
+WORKDIR ${HOME}/WindowsPowerShell
+
 USER ${USER}
 
 # Install nteract
