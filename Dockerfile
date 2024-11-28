@@ -1,8 +1,11 @@
 # Use a specific tag of the Jupyter base-notebook as the base image
 FROM jupyter/base-notebook:latest
 
-# Upgrade pip and install required packages, Node.js, and dependencies
+# Clean Docker Environment
 USER root
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and install required packages, Node.js, and dependencies
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
@@ -12,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     libssl-dev \
     git \
-    sudo
+    sudo && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js
 RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n && \
@@ -35,10 +38,12 @@ RUN python -m pip install jupyterthemes ipywidgets
 # Install Tornado
 RUN python -m pip install tornado==5.1.1
 
-# Install .NET SDK using the official Microsoft script
+# Install .NET SDK using the official Microsoft script with detailed logging
 RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
-    ./dotnet-install.sh --channel 3.1
+    ./dotnet-install.sh --channel 3.1 && \
+    ls -la /root/.dotnet && \
+    echo "DOTNET SDK installation completed."
 
 # Verify .NET SDK installation
 RUN /root/.dotnet/dotnet --info || { echo "dotnet installation failed"; exit 1; }
