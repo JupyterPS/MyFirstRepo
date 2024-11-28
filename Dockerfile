@@ -1,11 +1,8 @@
-# Use the specific tag of the Jupyter base-notebook as the base image
+# Use a specific tag of the Jupyter base-notebook as the base image
 FROM jupyter/base-notebook:latest
 
-# Clean Docker Environment
-USER root
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Upgrade pip and install required packages, Node.js, and dependencies
+USER root
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
@@ -15,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     libssl-dev \
     git \
-    sudo && apt-get clean && rm -rf /var/lib/apt/lists/*
+    sudo
 
 # Install Node.js
 RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n && \
@@ -43,18 +40,18 @@ RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --channel 3.1
 
-# Set the PATH environment variable and profile sourcing
-RUN echo 'export PATH=/root/.dotnet:/root/.dotnet/tools:$PATH' >> /etc/profile && \
-    echo 'export DOTNET_ROOT=/root/.dotnet' >> /etc/profile
+# Verify .NET SDK installation
+RUN /root/.dotnet/dotnet --info || { echo "dotnet installation failed"; exit 1; }
 
-# Source the profile and verify .NET SDK installation
-RUN /bin/bash -c "source /etc/profile && dotnet --info"
+# Set the PATH environment variable
+ENV PATH="/root/.dotnet:/root/.dotnet/tools:${PATH}"
+ENV DOTNET_ROOT="/root/.dotnet"
 
 # Install .NET Interactive tool
-RUN /bin/bash -c "source /etc/profile && dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'"
+RUN /root/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'
 
 # Install .NET Interactive Jupyter kernel
-RUN /bin/bash -c "source /etc/profile && dotnet interactive jupyter install"
+RUN /root/.dotnet/dotnet interactive jupyter install
 
 # Set up the working directory
 WORKDIR /home/jovyan
@@ -73,24 +70,6 @@ COPY ./NuGet.config ${HOME}/nuget.config
 
 # Set file ownership and permissions
 RUN chown -R ${NB_UID} ${HOME}
-USER ${USER}
-
-# Install nteract
-RUN pip install nteract_on_jupyter
-
-# Enable telemetry
-ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
-
-# Copy project files and set permissions
-COPY ./config ${HOME}/.jupyter/
-COPY ./ ${HOME}/Notebooks/
-RUN chown -R ${NB_UID} ${HOME}
-
-# Set default user and working directory
-USER ${USER}
-WORKDIR ${HOME}/Notebooks/
-WORKDIR ${HOME}/WindowsPowerShell
-
 USER ${USER}
 
 # Install nteract
