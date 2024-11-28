@@ -43,12 +43,10 @@ RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --channel 3.1
 
-# Set the PATH environment variable
+# Set the PATH environment variable and profile sourcing
 RUN echo 'export PATH=/root/.dotnet:/root/.dotnet/tools:$PATH' >> /etc/profile && \
-    echo 'export DOTNET_ROOT=/root/.dotnet' >> /etc/profile
-
-# Source the profile and verify .NET SDK installation
-RUN /bin/bash -c "source /etc/profile && dotnet --info"
+    echo 'export DOTNET_ROOT=/root/.dotnet' >> /etc/profile && \
+    source /etc/profile && dotnet --info
 
 # Install .NET Interactive tool
 RUN /bin/bash -c "source /etc/profile && dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'"
@@ -81,4 +79,12 @@ RUN pip install nteract_on_jupyter
 # Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
-# Copy project
+# Copy project files and set permissions
+COPY ./config ${HOME}/.jupyter/
+COPY ./ ${HOME}/Notebooks/
+RUN chown -R ${NB_UID} ${HOME}
+
+# Set default user and working directory
+USER ${USER}
+WORKDIR ${HOME}/Notebooks/
+WORKDIR ${HOME}/WindowsPowerShell
