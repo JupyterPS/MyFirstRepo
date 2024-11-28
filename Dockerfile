@@ -40,7 +40,7 @@ RUN python -m pip install jupyterlab-git jupyterlab_github
 RUN python -m pip install jupyterthemes ipywidgets
 
 # Install Tornado
-RUN python -m pip install tornado==5.1.1
+RUN python -m pip install tornado==6.3.3
 
 # Install .NET SDK using the official Microsoft script
 RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
@@ -67,7 +67,7 @@ RUN /home/jovyan/.dotnet/dotnet interactive jupyter install
 
 # Create directories with correct permissions
 RUN mkdir -p /home/jovyan/.local/lib /home/jovyan/.local/etc && \
-    chown -R jovyan:jovyan /home/jovyan/.local
+    chown -R 1000:1000 /home/jovyan/.local
 
 # Switch to jovyan user
 USER jovyan
@@ -79,23 +79,16 @@ RUN pip install --user nteract_on_jupyter
 WORKDIR /home/jovyan
 
 # Copy notebooks and configuration files as jovyan user
-COPY --chown=jovyan:jovyan ./config ${HOME}/.jupyter/
-COPY --chown=jovyan:jovyan ./ ${HOME}/WindowsPowerShell/
-COPY --chown=jovyan:jovyan ./NuGet.config ${HOME}/nuget.config
-
-# Switch back to root to set permissions
-USER root
-RUN chown -R jovyan:jovyan ${HOME}
-
-# Switch back to jovyan user for the rest of the operations
-USER jovyan
+COPY --chown=1000:1000 ./config ${HOME}/.jupyter/
+COPY --chown=1000:1000 ./ ${HOME}/WindowsPowerShell/
+COPY --chown=1000:1000 ./NuGet.config ${HOME}/nuget.config
 
 # Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
 # Copy project files and set permissions
-COPY --chown=jovyan:jovyan ./config ${HOME}/.jupyter/
-COPY --chown=jovyan:jovyan ./ ${HOME}/Notebooks/
+COPY --chown=1000:1000 ./config ${HOME}/.jupyter/
+COPY --chown=1000:1000 ./ ${HOME}/Notebooks/
 
 # Set default user and working directory
 USER ${USER}
