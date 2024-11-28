@@ -1,4 +1,4 @@
-# Step 1: Use a specific tag of the Jupyter base-notebook as the base image
+# Step 1: Use the specific tag of the Jupyter base-notebook as the base image
 FROM jupyter/base-notebook:latest
 
 # Step 2: Upgrade pip and install required packages, Node.js, and dependencies
@@ -32,7 +32,7 @@ RUN python -m pip install jupyterlab-git jupyterlab_github
 # Step 7: Install Jupyter themes and additional Python packages
 RUN python -m pip install jupyterthemes ipywidgets
 
-# Step 8: Install Tornado (latest version)
+# Step 8: Install Tornado
 RUN python -m pip install tornado
 
 # Step 9: Install .NET SDK using the official Microsoft script
