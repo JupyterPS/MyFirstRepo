@@ -75,7 +75,7 @@ COPY ./NuGet.config ${HOME}/nuget.config
 # Set file ownership and permissions
 RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
-
+ 
 # Install nteract
 RUN pip install nteract_on_jupyter
 
