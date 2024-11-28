@@ -19,20 +19,23 @@ RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bi
     chmod +x /usr/local/bin/n && \
     n 14.17.0
 
-# Step 4: Upgrade pip and install Python dependencies
-RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install notebook numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose
+# Step 4: Upgrade pip
+RUN python3 -m pip install --upgrade pip
 
-# Step 5: Install JupyterLab Git and related extensions
+# Step 5: Install Python dependencies in smaller chunks to avoid errors
+RUN python3 -m pip install notebook numpy spotipy
+RUN python3 -m pip install scipy matplotlib ipython jupyter pandas sympy nose
+
+# Step 6: Install JupyterLab Git and related extensions
 RUN python -m pip install jupyterlab-git jupyterlab_github
 
-# Step 6: Install Jupyter themes and additional Python packages
-RUN python -m pip install jupyterthemes numpy spotipy scipy matplotlib ipython jupyter pandas sympy nose ipywidgets
+# Step 7: Install Jupyter themes and additional Python packages
+RUN python -m pip install jupyterthemes ipywidgets
 
-# Step 7: Install Tornado
+# Step 8: Install Tornado
 RUN python -m pip install tornado==5.1.1
 
-# Step 8: Install .NET SDK using the official Microsoft script and alternative download links
+# Step 9: Install .NET SDK using the official Microsoft script and alternative download links
 RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --channel 3.1 || \
@@ -42,49 +45,49 @@ RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
      tar -zxf dotnet-sdk.tar.gz -C /usr/share/dotnet && \
      ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet)
 
-# Step 9: Set the PATH environment variable
+# Step 10: Set the PATH environment variable
 ENV PATH="/root/.dotnet:/root/.dotnet/tools:/usr/share/dotnet:${PATH}"
 
-# Step 10: Verify .NET SDK installation
+# Step 11: Verify .NET SDK installation
 RUN dotnet --info
 
-# Step 11: Install .NET Interactive tool
+# Step 12: Install .NET Interactive tool
 RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'
 
-# Step 12: Install .NET Interactive Jupyter kernel
+# Step 13: Install .NET Interactive Jupyter kernel
 RUN dotnet interactive jupyter install
 
-# Step 13: Set up the working directory
+# Step 14: Set up the working directory
 WORKDIR /home/jovyan
 
-# Step 14: Set up user and home environment variables
+# Step 15: Set up user and home environment variables
 ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV USER ${NB_USER}
 ENV NB_UID ${NB_UID}
 ENV HOME /home/${NB_USER}
 
-# Step 15: Copy notebooks and configuration files
+# Step 16: Copy notebooks and configuration files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
 COPY ./NuGet.config ${HOME}/nuget.config
 
-# Step 16: Set file ownership and permissions
+# Step 17: Set file ownership and permissions
 RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 
-# Step 17: Install nteract
+# Step 18: Install nteract
 RUN pip install nteract_on_jupyter
 
-# Step 18: Enable telemetry
+# Step 19: Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
-# Step 19: Copy project files and set permissions
+# Step 20: Copy project files and set permissions
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/Notebooks/
 RUN chown -R ${NB_UID} ${HOME}
 
-# Step 20: Set default user and working directory
+# Step 21: Set default user and working directory
 USER ${USER}
 WORKDIR ${HOME}/Notebooks/
 WORKDIR ${HOME}/WindowsPowerShell
