@@ -45,8 +45,10 @@ RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
 
 # Set the PATH environment variable and profile sourcing
 RUN echo 'export PATH=/root/.dotnet:/root/.dotnet/tools:$PATH' >> /etc/profile && \
-    echo 'export DOTNET_ROOT=/root/.dotnet' >> /etc/profile && \
-    source /etc/profile && dotnet --info
+    echo 'export DOTNET_ROOT=/root/.dotnet' >> /etc/profile
+
+# Source the profile and verify .NET SDK installation
+RUN /bin/bash -c "source /etc/profile && dotnet --info"
 
 # Install .NET Interactive tool
 RUN /bin/bash -c "source /etc/profile && dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'"
