@@ -1,8 +1,11 @@
 # Use a specific tag of the Jupyter base-notebook as the base image
 FROM jupyter/base-notebook:latest
 
-# Upgrade pip and install required packages, Node.js, and dependencies
+# Clean Docker Environment
 USER root
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and install required packages, Node.js, and dependencies
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
@@ -12,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     libssl-dev \
     git \
-    sudo
+    sudo && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js
 RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n && \
@@ -33,7 +36,7 @@ RUN python -m pip install jupyterlab-git jupyterlab_github
 RUN python -m pip install jupyterthemes ipywidgets
 
 # Install Tornado
-RUN python -m pip install tornado
+RUN python -m pip install tornado==5.1.1
 
 # Install .NET SDK using the official Microsoft script
 RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
@@ -78,12 +81,4 @@ RUN pip install nteract_on_jupyter
 # Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
-# Copy project files and set permissions
-COPY ./config ${HOME}/.jupyter/
-COPY ./ ${HOME}/Notebooks/
-RUN chown -R ${NB_UID} ${HOME}
-
-# Set default user and working directory
-USER ${USER}
-WORKDIR ${HOME}/Notebooks/
-WORKDIR ${HOME}/WindowsPowerShell
+# Copy project
