@@ -1,12 +1,14 @@
 # Use a specific tag of the Jupyter base-notebook as the base image
 FROM jupyter/base-notebook:latest
 
+# Switch to root user
+USER root
+
 # Create the jovyan user and group explicitly
 RUN groupadd -g 1000 jovyan && \
     useradd -m -s /bin/bash -u 1000 -g jovyan jovyan
 
 # Upgrade pip and install required packages, Node.js, and dependencies
-USER root
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
