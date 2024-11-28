@@ -45,17 +45,18 @@ RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
      tar -zxf dotnet-sdk.tar.gz -C /usr/share/dotnet && \
      ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet)
 
-# Step 10: Set the PATH environment variable
-ENV PATH="/root/.dotnet:/root/.dotnet/tools:/usr/share/dotnet:${PATH}"
+# Step 10: Source the environment profile to ensure PATH is updated
+RUN echo "export PATH=$PATH:/root/.dotnet:/root/.dotnet/tools:/usr/share/dotnet" >> /etc/profile && \
+    echo "export PATH=$PATH:/root/.dotnet:/root/.dotnet/tools:/usr/share/dotnet" >> /root/.bashrc
 
 # Step 11: Verify .NET SDK installation
-RUN dotnet --info
+RUN /bin/bash -c "source /etc/profile && dotnet --info"
 
 # Step 12: Install .NET Interactive tool
-RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'
+RUN /bin/bash -c "source /etc/profile && dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'"
 
 # Step 13: Install .NET Interactive Jupyter kernel
-RUN dotnet interactive jupyter install
+RUN /bin/bash -c "source /etc/profile && dotnet interactive jupyter install"
 
 # Step 14: Set up the working directory
 WORKDIR /home/jovyan
@@ -91,4 +92,3 @@ RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 WORKDIR ${HOME}/Notebooks/
 WORKDIR ${HOME}/WindowsPowerShell
-
