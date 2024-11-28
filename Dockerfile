@@ -36,48 +36,52 @@ RUN python -m pip install tornado==5.1.1
 RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --channel 3.1 && \
-    echo 'export PATH=$PATH:/root/.dotnet:/root/.dotnet/tools' >> /etc/profile
+    echo 'export PATH=$PATH:/root/.dotnet:/root/.dotnet/tools' >> /etc/profile && \
+    echo 'export PATH=$PATH:/root/.dotnet:/root/.dotnet/tools' >> /root/.bashrc
 
-# Step 9: Source the profile to update PATH and verify .NET SDK installation
-RUN /bin/bash -c "source /etc/profile && dotnet --info"
+# Step 9: Set the PATH environment variable
+ENV PATH="/root/.dotnet:/root/.dotnet/tools:${PATH}"
 
-# Step 10: Install .NET Interactive tool
-RUN /bin/bash -c "source /etc/profile && dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'"
+# Step 10: Verify .NET SDK installation
+RUN dotnet --info
 
-# Step 11: Install .NET Interactive Jupyter kernel
-RUN /bin/bash -c "source /etc/profile && dotnet interactive jupyter install"
+# Step 11: Install .NET Interactive tool
+RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'
 
-# Step 12: Set up the working directory
+# Step 12: Install .NET Interactive Jupyter kernel
+RUN dotnet interactive jupyter install
+
+# Step 13: Set up the working directory
 WORKDIR /home/jovyan
 
-# Step 13: Set up user and home environment variables
+# Step 14: Set up user and home environment variables
 ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV USER ${NB_USER}
 ENV NB_UID ${NB_UID}
 ENV HOME /home/${NB_USER}
 
-# Step 14: Copy notebooks and configuration files
+# Step 15: Copy notebooks and configuration files
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/WindowsPowerShell/
 COPY ./NuGet.config ${HOME}/nuget.config
 
-# Step 15: Set file ownership and permissions
+# Step 16: Set file ownership and permissions
 RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 
-# Step 16: Install nteract
+# Step 17: Install nteract
 RUN pip install nteract_on_jupyter
 
-# Step 17: Enable telemetry
+# Step 18: Enable telemetry
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
-# Step 18: Copy project files and set permissions
+# Step 19: Copy project files and set permissions
 COPY ./config ${HOME}/.jupyter/
 COPY ./ ${HOME}/Notebooks/
 RUN chown -R ${NB_UID} ${HOME}
 
-# Step 19: Set default user and working directory
+# Step 20: Set default user and working directory
 USER ${USER}
 WORKDIR ${HOME}/Notebooks/
 WORKDIR ${HOME}/WindowsPowerShell
