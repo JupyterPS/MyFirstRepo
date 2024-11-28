@@ -1,4 +1,4 @@
-# Step 1: Use the specific tag of the Jupyter base-notebook as the base image
+# Step 1: Use a specific tag of the Jupyter base-notebook as the base image
 FROM jupyter/base-notebook:latest
 
 # Step 2: Upgrade pip and install required packages, Node.js, and dependencies
@@ -32,31 +32,25 @@ RUN python -m pip install jupyterlab-git jupyterlab_github
 # Step 7: Install Jupyter themes and additional Python packages
 RUN python -m pip install jupyterthemes ipywidgets
 
-# Step 8: Install Tornado
-RUN python -m pip install tornado==5.1.1
+# Step 8: Install Tornado (latest version)
+RUN python -m pip install tornado
 
-# Step 9: Install .NET SDK using the official Microsoft script and alternative download links
+# Step 9: Install .NET SDK using the official Microsoft script
 RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
-    ./dotnet-install.sh --channel 3.1 || \
-    (echo 'Attempting alternative download link...' && \
-     curl -L https://dotnetcli.azureedge.net/dotnet/Sdk/3.1.426/dotnet-sdk-3.1.426-linux-x64.tar.gz -o dotnet-sdk.tar.gz && \
-     mkdir -p /usr/share/dotnet && \
-     tar -zxf dotnet-sdk.tar.gz -C /usr/share/dotnet && \
-     ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet)
+    ./dotnet-install.sh --channel 3.1
 
-# Step 10: Source the environment profile to ensure PATH is updated
-RUN echo "export PATH=$PATH:/root/.dotnet:/root/.dotnet/tools:/usr/share/dotnet" >> /etc/profile && \
-    echo "export PATH=$PATH:/root/.dotnet:/root/.dotnet/tools:/usr/share/dotnet" >> /root/.bashrc
+# Step 10: Set the PATH environment variable
+ENV PATH="/root/.dotnet:/root/.dotnet/tools:${PATH}"
 
 # Step 11: Verify .NET SDK installation
-RUN /bin/bash -c "source /etc/profile && dotnet --info"
+RUN /root/.dotnet/dotnet --info
 
 # Step 12: Install .NET Interactive tool
-RUN /bin/bash -c "source /etc/profile && dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'"
+RUN /root/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'
 
 # Step 13: Install .NET Interactive Jupyter kernel
-RUN /bin/bash -c "source /etc/profile && dotnet interactive jupyter install"
+RUN /root/.dotnet/dotnet interactive jupyter install
 
 # Step 14: Set up the working directory
 WORKDIR /home/jovyan
