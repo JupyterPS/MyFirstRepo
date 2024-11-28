@@ -91,3 +91,4 @@ RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 WORKDIR ${HOME}/Notebooks/
 WORKDIR ${HOME}/WindowsPowerShell
+
