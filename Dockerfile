@@ -32,22 +32,27 @@ RUN python -m pip install jupyterthemes numpy spotipy scipy matplotlib ipython j
 # Step 7: Install Tornado
 RUN python -m pip install tornado==5.1.1
 
-# Step 8: Install .NET SDK using the official Microsoft script and update PATH
+# Step 8: Install .NET SDK using the official Microsoft script and alternative download links
 RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
-    ./dotnet-install.sh --channel 3.1
+    ./dotnet-install.sh --channel 3.1 || \
+    (echo 'Attempting alternative download link...' && \
+     curl -L https://dotnetcli.azureedge.net/dotnet/Sdk/3.1.426/dotnet-sdk-3.1.426-linux-x64.tar.gz -o dotnet-sdk.tar.gz && \
+     mkdir -p /usr/share/dotnet && \
+     tar -zxf dotnet-sdk.tar.gz -C /usr/share/dotnet && \
+     ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet)
 
 # Step 9: Set the PATH environment variable
-ENV PATH="/root/.dotnet:/root/.dotnet/tools:${PATH}"
+ENV PATH="/root/.dotnet:/root/.dotnet/tools:/usr/share/dotnet:${PATH}"
 
 # Step 10: Verify .NET SDK installation
-RUN /root/.dotnet/dotnet --info
+RUN dotnet --info
 
 # Step 11: Install .NET Interactive tool
-RUN /root/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'
+RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'
 
 # Step 12: Install .NET Interactive Jupyter kernel
-RUN /root/.dotnet/dotnet interactive jupyter install
+RUN dotnet interactive jupyter install
 
 # Step 13: Set up the working directory
 WORKDIR /home/jovyan
