@@ -1,6 +1,10 @@
 # Use a specific tag of the Jupyter base-notebook as the base image
 FROM jupyter/base-notebook:latest
 
+# Create the jovyan user and group explicitly
+RUN groupadd -g 1000 jovyan && \
+    useradd -m -s /bin/bash -u 1000 -g jovyan jovyan
+
 # Upgrade pip and install required packages, Node.js, and dependencies
 USER root
 RUN apt-get update && apt-get install -y \
@@ -59,7 +63,7 @@ RUN /home/jovyan/.dotnet/dotnet interactive jupyter install
 
 # Create directories with correct permissions
 RUN mkdir -p /home/jovyan/.local/lib /home/jovyan/.local/etc && \
-    chown -R jovyan /home/jovyan/.local
+    chown -R jovyan:jovyan /home/jovyan/.local
 
 # Switch to jovyan user
 USER jovyan
@@ -71,9 +75,9 @@ RUN pip install --user nteract_on_jupyter
 WORKDIR /home/jovyan
 
 # Copy notebooks and configuration files as jovyan user
-COPY --chown=jovyan ./config ${HOME}/.jupyter/
-COPY --chown=jovyan ./ ${HOME}/WindowsPowerShell/
-COPY --chown=jovyan ./NuGet.config ${HOME}/nuget.config
+COPY --chown=jovyan:jovyan ./config ${HOME}/.jupyter/
+COPY --chown=jovyan:jovyan ./ ${HOME}/WindowsPowerShell/
+COPY --chown=jovyan:jovyan ./NuGet.config ${HOME}/nuget.config
 
 # Switch back to root to set permissions
 USER root
@@ -86,8 +90,8 @@ USER jovyan
 ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
 # Copy project files and set permissions
-COPY --chown=jovyan ./config ${HOME}/.jupyter/
-COPY --chown=jovyan ./ ${HOME}/Notebooks/
+COPY --chown=jovyan:jovyan ./config ${HOME}/.jupyter/
+COPY --chown=jovyan:jovyan ./ ${HOME}/Notebooks/
 
 # Set default user and working directory
 USER ${USER}
