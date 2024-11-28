@@ -57,6 +57,10 @@ RUN /home/jovyan/.dotnet/dotnet tool install --global Microsoft.dotnet-interacti
 # Install .NET Interactive Jupyter kernel
 RUN /home/jovyan/.dotnet/dotnet interactive jupyter install
 
+# Create directories with correct permissions
+RUN mkdir -p /home/jovyan/.local/lib && \
+    chown -R jovyan /home/jovyan/.local/lib
+
 # Switch back to jovyan user for installing nteract_on_jupyter
 USER jovyan
 
