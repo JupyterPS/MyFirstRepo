@@ -1,4 +1,4 @@
-# Use the specific tag of the Jupyter base-notebook as the base image
+# Use a specific tag of the Jupyter base-notebook as the base image
 FROM jupyter/base-notebook:latest
 
 # Upgrade pip and install required packages, Node.js, and dependencies
@@ -41,12 +41,11 @@ RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     ./dotnet-install.sh --channel 3.1
 
 # Set the PATH environment variable
-ENV PATH="/root/.dotnet:/root/.dotnet/tools:${PATH}"
+RUN echo 'export PATH=/root/.dotnet:/root/.dotnet/tools:$PATH' >> /etc/profile && \
+    echo 'export DOTNET_ROOT=/root/.dotnet' >> /etc/profile
 
 # Source the profile and verify .NET SDK installation
-RUN echo 'export PATH=$PATH:/root/.dotnet:/root/.dotnet/tools' >> /etc/profile && \
-    echo 'export PATH=$PATH:/root/.dotnet:/root/.dotnet/tools' >> /root/.bashrc && \
-    /bin/bash -c "source /etc/profile && dotnet --info"
+RUN /bin/bash -c "source /etc/profile && dotnet --info"
 
 # Install .NET Interactive tool
 RUN /bin/bash -c "source /etc/profile && dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'"
