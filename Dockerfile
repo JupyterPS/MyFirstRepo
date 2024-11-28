@@ -35,21 +35,19 @@ RUN python -m pip install tornado==5.1.1
 # Step 8: Install .NET SDK using the official Microsoft script and update PATH
 RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
-    ./dotnet-install.sh --channel 3.1 && \
-    echo 'export PATH=$PATH:/root/.dotnet:/root/.dotnet/tools' >> /etc/profile && \
-    echo 'export PATH=$PATH:/root/.dotnet:/root/.dotnet/tools' >> /root/.bashrc
+    ./dotnet-install.sh --channel 3.1
 
 # Step 9: Set the PATH environment variable
 ENV PATH="/root/.dotnet:/root/.dotnet/tools:${PATH}"
 
 # Step 10: Verify .NET SDK installation
-RUN dotnet --info
+RUN /root/.dotnet/dotnet --info
 
 # Step 11: Install .NET Interactive tool
-RUN dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'
+RUN /root/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'
 
 # Step 12: Install .NET Interactive Jupyter kernel
-RUN dotnet interactive jupyter install
+RUN /root/.dotnet/dotnet interactive jupyter install
 
 # Step 13: Set up the working directory
 WORKDIR /home/jovyan
