@@ -40,18 +40,19 @@ RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --channel 3.1
 
-# Set the PATH environment variable and verify .NET SDK installation
-RUN echo 'export PATH=$PATH:/root/.dotnet:/root/.dotnet/tools' >> /etc/profile.d/dotnet.sh && \
-    source /etc/profile.d/dotnet.sh && \
-    /root/.dotnet/dotnet --info
+# Set the PATH environment variable
+ENV PATH="/root/.dotnet:/root/.dotnet/tools:${PATH}"
+
+# Source the profile and verify .NET SDK installation
+RUN echo 'export PATH=$PATH:/root/.dotnet:/root/.dotnet/tools' >> /etc/profile && \
+    echo 'export PATH=$PATH:/root/.dotnet:/root/.dotnet/tools' >> /root/.bashrc && \
+    /bin/bash -c "source /etc/profile && dotnet --info"
 
 # Install .NET Interactive tool
-RUN source /etc/profile.d/dotnet.sh && \
-    /root/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'
+RUN /bin/bash -c "source /etc/profile && dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'"
 
 # Install .NET Interactive Jupyter kernel
-RUN source /etc/profile.d/dotnet.sh && \
-    /root/.dotnet/dotnet interactive jupyter install
+RUN /bin/bash -c "source /etc/profile && dotnet interactive jupyter install"
 
 # Set up the working directory
 WORKDIR /home/jovyan
