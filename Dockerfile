@@ -57,6 +57,15 @@ RUN /home/jovyan/.dotnet/dotnet tool install --global Microsoft.dotnet-interacti
 # Install .NET Interactive Jupyter kernel
 RUN /home/jovyan/.dotnet/dotnet interactive jupyter install
 
+# Switch back to jovyan user for installing nteract_on_jupyter
+USER jovyan
+
+# Install nteract
+RUN pip install --user nteract_on_jupyter
+
+# Enable telemetry
+ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
+
 # Set up the working directory
 WORKDIR /home/jovyan
 
@@ -75,12 +84,6 @@ COPY ./NuGet.config ${HOME}/nuget.config
 # Set file ownership and permissions
 RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
- 
-# Install nteract
-RUN pip install nteract_on_jupyter
-
-# Enable telemetry
-ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=false
 
 # Copy project files and set permissions
 COPY ./config ${HOME}/.jupyter/
