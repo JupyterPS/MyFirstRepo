@@ -50,20 +50,20 @@ RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && chmod +
 RUN wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb && dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
 
 # Verify .NET SDK installation in /home/jovyan/.dotnet
-RUN ls -la /home/jovyan/.dotnet >> /home/jovyan/jupyter-logs/install.log && echo "DOTNET SDK installation completed." >> /home/jovyan/jupyter-logs/install.log
+RUN ls -la /home/jovyan/.dotnet && echo "DOTNET SDK installation completed."
 
 # Set the PATH environment variable
 ENV PATH="/home/jovyan/.dotnet:/home/jovyan/.dotnet/tools:${PATH}"
 ENV DOTNET_ROOT="/home/jovyan/.dotnet"
 
 # Install .NET Interactive tool
-RUN /home/jovyan/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json' >> /home/jovyan/jupyter-logs/install.log
+RUN /home/jovyan/.dotnet/dotnet tool install --global Microsoft.dotnet-interactive --version 1.0.155302 --add-source 'https://dotnet.myget.org/F/dotnet-try/api/v3/index.json'
 
 # Install .NET Interactive Jupyter kernel
-RUN /home/jovyan/.dotnet/dotnet interactive jupyter install >> /home/jovyan/jupyter-logs/install.log
+RUN /home/jovyan/.dotnet/dotnet interactive jupyter install
 
 # Create directories with correct permissions
-RUN mkdir -p /home/jovyan/.local/lib /home/jovyan/.local/etc && chown -R 1000:1000 /home/jovyan/.local >> /home/jovyan/jupyter-logs/install.log
+RUN mkdir -p /home/jovyan/.local/lib /home/jovyan/.local/etc && chown -R 1000:1000 /home/jovyan/.local
 
 # Enforce UTF-8 encoding
 ENV LC_ALL=C.UTF-8
@@ -73,7 +73,7 @@ ENV LANG=C.UTF-8
 USER jovyan
 
 # Install nteract
-RUN pip install --user nteract_on_jupyter >> /home/jovyan/jupyter-logs/install.log
+RUN pip install --user nteract_on_jupyter
 
 # Set up the working directory
 WORKDIR /home/jovyan
