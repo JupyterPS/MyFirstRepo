@@ -79,8 +79,8 @@ RUN pip install --user nteract_on_jupyter
 WORKDIR /home/jovyan
 
 # Final working directory
-WORKDIR /home/jovyan/WindowsPowerShell/
-RUN mkdir -p /home/jovyan/.jupyter && echo "c.NotebookApp.log_level = 'DEBUG'" > /home/jovyan/.jupyter/jupyter_notebook_config.py
+#WORKDIR /home/jovyan/WindowsPowerShell/
+#RUN mkdir -p /home/jovyan/.jupyter && echo "c.NotebookApp.log_level = 'DEBUG'" > /home/jovyan/.jupyter/jupyter_notebook_config.py
 
 # Step 29: Add a command to view logs after start
 CMD tail -f /home/jovyan/.jupyter/jupyter.log
