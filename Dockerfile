@@ -78,6 +78,9 @@ RUN pip install --user nteract_on_jupyter
 # Set up the working directory
 WORKDIR /home/jovyan
 
+# Step 29: Add a command to view logs after start
+CMD tail -f /home/jovyan/.jupyter/jupyter.log
+
 # Copy notebooks and configuration files as jovyan user
 COPY --chown=1000:1000 ./config ${HOME}/.jupyter/
 COPY --chown=1000:1000 ./ ${HOME}/WindowsPowerShell/
